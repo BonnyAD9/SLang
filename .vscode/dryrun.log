@@ -1,0 +1,8 @@
+make.exe --dry-run --always-make --keep-going --print-directory
+make: Entering directory 'x:/Files/Programming/C/SLang'
+gcc -c -Wall -std=c17 -g  main.c -o obj/main.o
+ 
+gcc -c -Wall -std=c17 -g  test.c -o obj/test.o
+gcc  obj/main.o  obj/test.o -o bin/SLang.exe
+make: Leaving directory 'x:/Files/Programming/C/SLang'
+ 
