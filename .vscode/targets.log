@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu May 26 14:19:29 2022
+# Make data base, printed on Thu May 26 21:10:58 2022
 
 # Variables
 
@@ -25,9 +25,9 @@ USERPROFILE = C:\Users\kubas
 # environment
 LOCALAPPDATA = C:\Users\kubas\AppData\Local
 # environment
-VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-301eb5cb-22ee-4a5c-b14e-70d8cdf7bfc6-sock
+VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-37d92883-f09c-4de9-91e6-8a6746e123a3-sock
 # makefile (from 'Makefile', line 5)
-CFILES := main.c test.c
+CFILES := Lexer.c Token.c TokenList.c main.c
 # environment
 VSCODE_CWD = X:\Files\Programming\C\SLang
 # environment
@@ -45,7 +45,7 @@ MAKE_COMMAND := C:/ProgramData/chocolatey/lib/make/tools/install/bin/make.exe
 # environment
 PICS = X:\Files\Pictures
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_20760_LNVBICRERWDASCQD
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_24540_QIKEGESQJMCSTABJ
 # environment
 FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
@@ -105,7 +105,7 @@ MAKEFILE_LIST := Makefile
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-VSCODE_PID = 20760
+VSCODE_PID = 24540
 # environment
 DOWN = X:\Files\Downloads
 # automatic
@@ -123,7 +123,7 @@ ONEDRIVECONSUMER = C:\Users\kubas\OneDrive
 # default
 MAKE_HOST := Windows32
 # makefile (from 'Makefile', line 6)
-OBJS :=  obj/main.o  obj/test.o
+OBJS :=  obj/Lexer.o  obj/Token.o  obj/TokenList.o  obj/main.o
 # environment
 PROGRAMDATA = C:\ProgramData
 # default
@@ -209,9 +209,10 @@ NUMBER_OF_PROCESSORS = 12
 # environment
 PUBLIC = C:\Users\Public
 # environment
-APPDATA = C:\Users\kubas\AppData\Roaming
+APPDATA = C 
+:\Users\kubas\AppData\Roaming
 # makefile (from 'Makefile', line 4)
-CFLAGS := -Wall -std=c17 -g
+CFLAGS := -Wall -std=c17 -g -D_DEBUG -DASSERT_EXIT
 # environment
 HOMEDRIVE = C:
 # environment
@@ -227,8 +228,7 @@ ELECTRON_RUN_AS_NODE = 1
 # environment
 TEMP = C:\Users\kubas\AppData\Local\Temp
 # environment
-VSCODE_IPC_HOOK = \\.\pipe\fbdf9cf1f4268a06f607ea6a964f4a1f-1.67.2-main-s 
-ock
+VSCODE_IPC_HOOK = \\.\pipe\fbdf9cf1f4268a06f607ea6a964f4a1f-1.67.2-main-sock
 # default
 .RECIPEPREFIX := 
 # automatic
@@ -262,9 +262,9 @@ PROCESSOR_IDENTIFIER = AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD
 
 # Directories
 
-# . (key x:/Files/Programming/C/SLang, mtime 1653559378): 10 files, no impossibilities.
+# . (key x:/Files/Programming/C/SLang, mtime 1653591922): 15 files, no impossibilities.
 
-# 10 files, no impossibilities in 1 directories.
+# 15 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -272,14 +272,21 @@ PROCESSOR_IDENTIFIER = AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD
 
 # Files
 
-obj/main.o: main.c test.c
+obj/Lexer.o: Lexer.c Token.c TokenList.c main.c
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 15):
 	$(CC) -c $(CFLAGS) $(patsubst obj/%.o, %.c, $@) -o $@
 
-debug: obj/main.o obj/test.o
+obj/main.o: Lexer.c Token.c TokenList.c main.c
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 15):
+	$(CC) -c $(CFLAGS) $(patsubst obj/%.o, %.c, $@) -o $@
+
+debug: obj/Lexer.o obj/Token.o obj/TokenList.o obj/main.o
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -289,9 +296,15 @@ debug: obj/main.o obj/test.o
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-05-26 12:54:51
+#  Last modified 2022-05-26 21:09:49
 #  File has been updated.
 #  Successfully updated.
+
+# Not a target:
+Token.c:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
 clean:
 #  Implicit rule search has not been done.
@@ -300,11 +313,13 @@ clean:
 #  recipe to execute (from 'Makefile', line 21):
 	del $(patsubst obj/%, obj\\%, $(OBJS))
 
-# Not a target:
-test.c:
+obj/TokenList.o: Lexer.c Token.c TokenList.c main.c
 #  Implicit rule search has not been done.
 #  Modification time never checked.
-#  File has not been updated.
+#  File has not been u 
+pdated.
+#  recipe to execute (from 'Makefile', line 15):
+	$(CC) -c $(CFLAGS) $(patsubst obj/%.o, %.c, $@) -o $@
 
 # Not a target:
 .DEFAULT:
@@ -332,7 +347,13 @@ main.c:
 #  Modification time never checked.
 #  File has not been updated.
 
-obj/test.o: main.c test.c
+# Not a target:
+TokenList.c:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+obj/Token.o: Lexer.c Token.c TokenList.c main.c
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -346,20 +367,26 @@ release:
 #  recipe to execute (from 'Makefile', line 12):
 	$(CC) $(CFLAGS) $(CFILES) -O3 -o bin/release/$(NAME).exe
 
+# Not a target:
+Lexer.c:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
 # files hash-table stats:
-# Load=12/1024=1%, Rehash=0, Collisions=0/29=0%
+# Load=16/1024=2%, Rehash=0, Collisions=0/39=0%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 19 / storage = 125 B / avg = 6 B
-# current buf: size = 8174 B / used = 125 B / count = 19 / avg = 6 B
+# strcache buffers: 1 (0) / strings = 26 / storage = 205 B / avg = 7 B
+# current buf: size = 8174 B / used = 205 B / count = 26 / avg = 7 B
 
-# strcache performance: lookups = 34 / hit rate = 44%
+# strcache performance: lookups = 47 / hit rate = 44%
 # hash-table stats:
-# Load=19/8192=0%, Rehash=0, Collisions=0/34=0%
-# Finished Make data base on Thu May 26 14:19:29 2022
+# Load=26/8192=0%, Rehash=0, Collisions=0/47=0%
+# Finished Make data base on Thu May 26 21:10:58 2022
 
  

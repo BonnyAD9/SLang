@@ -1,13 +1,11 @@
 {
     "version": "2.0.0",
-    "tasks":
-    [
+    "tasks": [
         {
             "label": "MakeDebug",
             "command": "make",
             "type": "shell",
-            "args":
-            [
+            "args": [
                 "debug"
             ]
         }

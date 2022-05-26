@@ -1,7 +1,7 @@
 CC:=gcc
 NAME:=SLang
 FILE:=bin/$(NAME).exe
-CFLAGS:=-Wall -std=c17 -g
+CFLAGS:=-Wall -std=c17 -g -D_DEBUG -DASSERT_EXIT
 CFILES:=$(wildcard *.c)
 OBJS:=$(patsubst %.c, obj/%.o, $(CFILES))
 
