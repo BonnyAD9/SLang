@@ -6,7 +6,7 @@
 
 int main()
 {
-    char* filename = "testFile.sl";
+    char* filename = "_tokenizerTest.sl";
     FILE *f = fopen(filename, "r");
     TokenArray arr = lex(f);
     fclose(f);

@@ -14,38 +14,51 @@
 #define STRING_LIST_ALLOC_SIZE 128LL
 #endif // STRING_LIST_ALLOC_SIZE
 
+#define newList(type) createList(sizeof(type))
+#define listAdd(list, item, type) {type __item=item;listAddP(&list,&__item);}
+#define listGet(list, index, type) *(type*)listGetP(list, index)
+
 /**
  * @brief represents list of strings
  * 
  */
-typedef struct FileSpanList
+typedef struct List
 {
-    FileSpan* data;
+    unsigned char* data;
+    size_t element;
     size_t allocated;
     size_t length;
-} FileSpanList;
+} List;
 
 /**
  * @brief Create a String List object
  * 
  * @return new StringList
  */
-FileSpanList createFileSpanList();
+List createList(size_t elementSize);
 
 /**
  * @brief frees this string list
  * 
  * @param list list to free
- * @param deep indicates whether each string should be freed
  */
-void freeFileSpanList(FileSpanList list, bool deep);
+void freeList(List list);
 
 /**
  * @brief adds string to the list
  * 
  * @param list list to which the string will be added
- * @param item string to add to the list
+ * @param item pointer to item to add to the list
  */
-void fileSpanListAdd(FileSpanList* list, FileSpan item);
+void listAddP(List* list, void* pItem);
+
+/**
+ * @brief gets item at the given index
+ * 
+ * @param list list to get the item from
+ * @param index index of the item
+ * @return void* pointer to the item
+ */
+void* listGetP(List list, size_t index);
 
 #endif // STRING_LIST_INCLUDED

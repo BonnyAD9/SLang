@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "Assert.h"
+
 void freeToken(Token token)
 {
     switch (token.type)

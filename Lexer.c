@@ -7,10 +7,16 @@
 #include "Token.h"
 #include "TokenArray.h"
 #include "FileSpan.h"
-#include "FileSpanList.h"
+#include "List.h"
 #include "Assert.h"
 
-FileSpanList _tokenize(FILE* in);
+/**
+ * @brief splits the file contents into FileSpans
+ * 
+ * @param in File to read from
+ * @return List list of FileSpans
+ */
+List _tokenize(FILE* in);
 /**
  * @brief determines whether the given character is whitespace
  * 
@@ -36,11 +42,12 @@ size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size
 TokenArray lex(FILE* in)
 {
     assert(in, "lex: parameter in was null");
-    FileSpanList list = _tokenize(in);
+    List list = _tokenize(in);
     TokenArray arr = createTokenArray(list.length);
+
     for (size_t i = 0; i < arr.length; i++)
     {
-        FileSpan span = list.data[i];
+        FileSpan span = listGet(list, i, FileSpan);
         switch (span.str[0])
         {
         case 0:
@@ -52,7 +59,7 @@ TokenArray lex(FILE* in)
             freeFileSpan(span);
             continue;
         case ']':
-            arr.data[i] = fileSpanTokenPos(PUNCTUATION_BRACKET_CLOSE, list.data[i]);
+            arr.data[i] = fileSpanTokenPos(PUNCTUATION_BRACKET_CLOSE, span);
             freeFileSpan(span);
             continue;
         case '/':
@@ -104,17 +111,17 @@ TokenArray lex(FILE* in)
             break;
         }
     }
-    freeFileSpanList(list, false);
+    freeList(list);
     return arr;
 }
 
-FileSpanList _tokenize(FILE* in)
+List _tokenize(FILE* in)
 {
     assert(in, "_tokenize: parameter in was null");
     assert(LEXER_READ_BUFFER_SIZE > 1, "_tokenize: minimum LEXER_READ_BUFFER_SIZE is 2 but it is %I64d", LEXER_READ_BUFFER_SIZE);
 
-    FileSpanList list = createFileSpanList();
-    
+    List list = newList(FileSpan);
+
     char buffer[LEXER_READ_BUFFER_SIZE];
     size_t pos = 0;
 
@@ -135,7 +142,7 @@ FileSpanList _tokenize(FILE* in)
         case '\n':
             if (pos != 0)
             {
-                fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col - pos));
+                listAdd(list, copyFileSpanFrom(buffer, pos, line, col - pos), FileSpan);
                 pos = 0;
             }
             line++;
@@ -147,7 +154,7 @@ FileSpanList _tokenize(FILE* in)
         case '\r':
             if (pos == 0)
                 continue;
-            fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col - pos));
+            listAdd(list, copyFileSpanFrom(buffer, pos, line, col - pos), FileSpan);
             pos = 0;
             continue;
         // brackets are always token by them self
@@ -156,13 +163,13 @@ FileSpanList _tokenize(FILE* in)
             // end any currently readed token
             if (pos != 0)
             {
-                fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col - pos));
+                listAdd(list, copyFileSpanFrom(buffer, pos, line, col - pos), FileSpan);
                 pos = 0;
             }
             // read the bracket
             {
                 char character = chr;
-                fileSpanListAdd(&list, copyFileSpanFrom(&character, 1, line, col));
+                listAdd(list, copyFileSpanFrom(&character, 1, line, col), FileSpan);
             }
             continue;
         // strings and chars are in single or double quotes
@@ -184,7 +191,7 @@ FileSpanList _tokenize(FILE* in)
                 size_t qCol = col;
                 // read the text (keep track of the position in file       v      v)
                 pos = _readQuote(in, buffer, LEXER_READ_BUFFER_SIZE, chr, &line, &col);
-                fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, qLine, qCol));
+                listAdd(list, copyFileSpanFrom(buffer, pos, qLine, qCol), FileSpan);
                 pos = 0;
             }
             continue;
@@ -201,7 +208,7 @@ FileSpanList _tokenize(FILE* in)
             }
             // comments immidietly end the token, the / is not part of the token
             if (pos > 1)
-                fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos - 1, line, col - pos));
+                listAdd(list, copyFileSpanFrom(buffer, pos - 1, line, col - pos), FileSpan);
             // read the comment with the //
             pos = 2;
             buffer[0] = '/';
@@ -213,7 +220,7 @@ FileSpanList _tokenize(FILE* in)
                 // newline ends the line comment
                 if (chr == '\n')
                 {
-                    fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col - pos));
+                    listAdd(list, copyFileSpanFrom(buffer, pos, line, col - pos), FileSpan);
                     pos = 0;
                     line++;
                     col = 0;
@@ -238,7 +245,7 @@ FileSpanList _tokenize(FILE* in)
             }
             // comments immidietly end any previous token (/ is not part of the token)
             if (pos > 1)
-                fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos - 1, line, col - pos));
+                listAdd(list, copyFileSpanFrom(buffer, pos - 1, line, col - pos), FileSpan);
             // read the comment with the /*
             pos = 2;
             buffer[0] = '/';
@@ -263,7 +270,7 @@ FileSpanList _tokenize(FILE* in)
                     // check for the */ that ends the comment
                     if (chr == '/' && buffer[pos - 2] == '*')
                     {
-                        fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, comLine, comCol));
+                        listAdd(list, copyFileSpanFrom(buffer, pos, comLine, comCol), FileSpan);
                         pos = 0;
                         break;
                     }
@@ -281,7 +288,7 @@ FileSpanList _tokenize(FILE* in)
     }
     // if file ends, read the last readed token
     if (pos != 0)
-        fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col - pos));
+        listAdd(list, copyFileSpanFrom(buffer, pos, line, col - pos), FileSpan);
     return list;
 }
 
