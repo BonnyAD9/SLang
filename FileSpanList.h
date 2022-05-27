@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "FileSpan.h"
+
 #ifndef STRING_LIST_START_SIZE
 #define STRING_LIST_START_SIZE 16LL
 #endif // STRING_LIST_START_SIZE
@@ -16,19 +18,19 @@
  * @brief represents list of strings
  * 
  */
-typedef struct TokenList
+typedef struct FileSpanList
 {
-    char** data;
+    FileSpan* data;
     size_t allocated;
     size_t length;
-} TokenList;
+} FileSpanList;
 
 /**
  * @brief Create a String List object
  * 
  * @return new StringList
  */
-TokenList createStringList();
+FileSpanList createFileSpanList();
 
 /**
  * @brief frees this string list
@@ -36,7 +38,7 @@ TokenList createStringList();
  * @param list list to free
  * @param deep indicates whether each string should be freed
  */
-void freeStringList(TokenList list, bool deep);
+void freeFileSpanList(FileSpanList list, bool deep);
 
 /**
  * @brief adds string to the list
@@ -44,13 +46,6 @@ void freeStringList(TokenList list, bool deep);
  * @param list list to which the string will be added
  * @param item string to add to the list
  */
-void stringListAdd(TokenList list, char* item);
-
-/**
- * @brief returns the last added element
- * 
- * @param list 
- */
-void stringListLast(TokenList list);
+void fileSpanListAdd(FileSpanList* list, FileSpan item);
 
 #endif // STRING_LIST_INCLUDED

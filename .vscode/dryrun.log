@@ -1,10 +1,11 @@
 make.exe debug --dry-run --always-make --keep-going --print-directory
 make: Entering directory 'x:/Files/Programming/C/SLang'
+gcc -c -Wall -std=c17 -g -D_DEBUG -DASSERT_EXIT  FileSpan.c -o obj/FileSpan.o
+gcc -c -Wall -std=c17 -g -D_DEBUG -DASSERT_EXIT  FileSpanList.c -o obj/FileSpanList.o
 gcc -c -Wall -std=c17 -g -D_DEBUG -DASSERT_EXIT  Lexer.c -o obj/Lexer.o
- 
 gcc -c -Wall -std=c17 -g -D_DEBUG -DASSERT_EXIT  Token.c -o obj/Token.o
-gcc -c -Wall -std=c17 -g -D_DEBUG -DASSERT_EXIT  TokenList.c -o obj/TokenList.o
+gcc -c -Wall -std=c17 -g -D_DEBUG -DASSERT_EXIT  TokenArray.c -o obj/TokenArray.o
 gcc -c -Wall -std=c17 -g -D_DEBUG -DASSERT_EXIT  main.c -o obj/main.o
-gcc  obj/Lexer.o  obj/Token.o  obj/TokenList.o  obj/main.o -o bin/SLang.exe
+gcc  obj/FileSpan.o  obj/FileSpanList.o  obj/Lexer.o  obj/Token.o  obj/TokenArray.o  obj/main.o -o bin/SLang.exe
 make: Leaving directory 'x:/Files/Programming/C/SLang'
  

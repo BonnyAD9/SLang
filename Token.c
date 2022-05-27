@@ -17,10 +17,17 @@ void freeToken(Token token)
     case INVALID:
         free(token.string);
         return;
+    default:
+        return;
     }
 }
 
-Token createToken(TokenType type, int line, int col)
+Token fileSpanToken(TokenType type, FileSpan span)
+{
+    return stringToken(type, span.str, span.line, span.col);
+}
+
+Token createToken(TokenType type, size_t line, size_t col)
 {
     Token t =
     {
@@ -32,7 +39,7 @@ Token createToken(TokenType type, int line, int col)
     return t;
 }
 
-Token stringToken(TokenType type, char *string, int line, int col)
+Token stringToken(TokenType type, char *string, size_t line, size_t col)
 {
     Token t =
     {
@@ -44,7 +51,7 @@ Token stringToken(TokenType type, char *string, int line, int col)
     return t;
 }
 
-Token integerToken(TokenType type, long long integer, int line, int col)
+Token integerToken(TokenType type, long long integer, size_t line, size_t col)
 {
     Token t =
     {
@@ -56,7 +63,7 @@ Token integerToken(TokenType type, long long integer, int line, int col)
     return t;
 }
 
-Token decimalToken(TokenType type, double decimal, int line, int col)
+Token decimalToken(TokenType type, double decimal, size_t line, size_t col)
 {
     Token t =
     {
@@ -68,7 +75,7 @@ Token decimalToken(TokenType type, double decimal, int line, int col)
     return t;
 }
 
-Token characterToken(TokenType type, char character, int line, int col)
+Token characterToken(TokenType type, char character, size_t line, size_t col)
 {
     Token t =
     {
@@ -112,7 +119,7 @@ void printToken(FILE* out, Token token)
         fprintf(out, "struct(%s)", token.string);
         return;
     case LITERAL_INTEGER:
-        fprintf(out, "integer(%lld)", token.integer);
+        fprintf(out, "integer(%I64d)", token.integer);
         return;
     case LITERAL_FLOAT:
         fprintf(out, "float(%lf)", token.decimal);

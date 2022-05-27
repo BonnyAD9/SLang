@@ -4,18 +4,20 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "FileSpan.h"
+
 /**
  * @brief represents type of token
  * 
  */
 typedef enum TokenType
 {
-    UNDEFINED,
+    UNDEFINED = 0,
     INVALID,
     COMMENT_LINE, // hello
     COMMENT_BLOCK, // /* hello */
-    PUNCTUATION_BRACKET_OPEN, // (
-    PUNCTUATION_BRACKET_CLOSE, // )
+    PUNCTUATION_BRACKET_OPEN, // [
+    PUNCTUATION_BRACKET_CLOSE, // ]
     IDENTIFIER_VARIABLE, // i
     IDENTIFIER_FUNCTION, // +
     IDENTIFIER_STRUCT, // list
@@ -57,6 +59,15 @@ typedef struct Token
 void printToken(FILE* out, Token token);
 
 /**
+ * @brief creates token from file span
+ * 
+ * @param type type of the token
+ * @param span span with the string an file position
+ * @return Token new instance
+ */
+Token fileSpanToken(TokenType type, FileSpan span);
+
+/**
  * @brief Create a Token object with no data
  * 
  * @param type type of the token
@@ -64,7 +75,7 @@ void printToken(FILE* out, Token token);
  * @param col collumn of the first character of the token
  * @return new Token
  */
-Token createToken(TokenType type, int line, int col);
+Token createToken(TokenType type, size_t line, size_t col);
 
 /**
  * @brief Create a Token object with string data
@@ -75,7 +86,7 @@ Token createToken(TokenType type, int line, int col);
  * @param col collumn of the first character of the token
  * @return new Token
  */
-Token stringToken(TokenType type, char* string, int line, int col);
+Token stringToken(TokenType type, char* string, size_t line, size_t col);
 
 /**
  * @brief Create a Token object with integer data
@@ -86,7 +97,7 @@ Token stringToken(TokenType type, char* string, int line, int col);
  * @param col collumn of the first character of the token
  * @return new Token
  */
-Token integerToken(TokenType type, long long integer, int line, int col);
+Token integerToken(TokenType type, long long integer, size_t line, size_t col);
 
 /**
  * @brief Create a Token object with decimal data
@@ -97,7 +108,7 @@ Token integerToken(TokenType type, long long integer, int line, int col);
  * @param col collumn of the first character of the token
  * @return new Token
  */
-Token decimalToken(TokenType type, double decimal, int line, int col);
+Token decimalToken(TokenType type, double decimal, size_t line, size_t col);
 
 /**
  * @brief Create a Token object with character data
@@ -108,7 +119,7 @@ Token decimalToken(TokenType type, double decimal, int line, int col);
  * @param col collumn of the first character of the token
  * @return new Token
  */
-Token characterToken(TokenType type, char character, int line, int col);
+Token characterToken(TokenType type, char character, size_t line, size_t col);
 
 /**
  * @brief frees this token string (if it is that type)

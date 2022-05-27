@@ -8,7 +8,7 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "cwd": ".",
+            "cwd": "${workspaceFolder}/bin",
             "program": "${workspaceFolder}/bin/SLang.exe",
             "preLaunchTask": "MakeDebug"
         }

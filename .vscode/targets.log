@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu May 26 21:10:58 2022
+# Make data base, printed on Fri May 27 12:18:34 2022
 
 # Variables
 
@@ -25,9 +25,9 @@ USERPROFILE = C:\Users\kubas
 # environment
 LOCALAPPDATA = C:\Users\kubas\AppData\Local
 # environment
-VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-37d92883-f09c-4de9-91e6-8a6746e123a3-sock
+VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-ec10c4ca-2ec0-4595-84da-28480b50ac62-sock
 # makefile (from 'Makefile', line 5)
-CFILES := Lexer.c Token.c TokenList.c main.c
+CFILES := FileSpan.c FileSpanList.c Lexer.c Token.c TokenArray.c main.c
 # environment
 VSCODE_CWD = X:\Files\Programming\C\SLang
 # environment
@@ -45,7 +45,7 @@ MAKE_COMMAND := C:/ProgramData/chocolatey/lib/make/tools/install/bin/make.exe
 # environment
 PICS = X:\Files\Pictures
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_24540_QIKEGESQJMCSTABJ
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_24164_SJBTUBICTYGJVNOI
 # environment
 FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
@@ -105,7 +105,7 @@ MAKEFILE_LIST := Makefile
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-VSCODE_PID = 24540
+VSCODE_PID = 24164
 # environment
 DOWN = X:\Files\Downloads
 # automatic
@@ -123,7 +123,7 @@ ONEDRIVECONSUMER = C:\Users\kubas\OneDrive
 # default
 MAKE_HOST := Windows32
 # makefile (from 'Makefile', line 6)
-OBJS :=  obj/Lexer.o  obj/Token.o  obj/TokenList.o  obj/main.o
+OBJS :=  obj/FileSpan.o  obj/FileSpanList.o  obj/Lexer.o  obj/Token.o  obj/TokenArray.o  obj/main.o
 # environment
 PROGRAMDATA = C:\ProgramData
 # default
@@ -145,7 +145,8 @@ MAKELEVEL := 0
 # default
 MAKE = $(MAKE_COMMAND)
 # environment
-PATH = C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Razer Chroma SDK\bin;C:\Program Files\Razer Chroma SDK\bin;C:\Program Files (x86)\Razer\ChromaBroadcast\bin;C:\Program Files\Razer\ChromaBroadcast\bin;C:\Program Files\J902\bin\;C:\Program Files\Java\jdk-11.0.7\bin;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;X:\Files\PATH\MemeCutter\;C:\Program Files (x86)\Vim\vim82;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\WINDOWS\system32\config\systemprofile\AppData\Local\Microsoft\WindowsApps;C:\Program Files\dotnet\;C:\ProgramData\chocolatey\bin;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\CodeBlocks\MinGW\bin;X:\Files\Programming\C#\Eval\Eval\bin\Release\net5.0;X:\Files\Programming\C#\Wavg\Wavg\bin\Release\net5.0;X:\Files\Programming\C#\CalT\CalT\bin\Release\net5.0;X:\Files\Programming\C#\Table\Table\bin\Release\net5.0;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;X:\Files\Programming\C#\MProc\MProc\bin\Release\net6.0;C:\Program Files\OpenSSL-Win64\bin;C:\Program Files\Git\cmd;X:\Program Files\Racket;C:\Program Files\nodejs\;C:\Program Files\PowerShell\7\;C:\Users\kubas\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\kubas\AppData\Local\Programs\Python\Python310\;C:\Users\kubas\.cargo\bin;C:\Users\kubas\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\kubas\AppData\Local\Programs\Python\Python39\;C:\Users\kubas\AppData\Local\Programs\Python\Python38\Scripts\;C:\Users\kubas\AppData\Local\Programs\Python\Python38\;C:\Users\kubas\AppData\Local\Microsoft\WindowsApps;C:\MinGW\bin;X:\Files\Programming\C#\-Fin\DayMan (fin)\DayMan\DayMan\bin\Release\net6.0;X:\Files\Programming\C#\-Fin\Primes (fin)\Primes\bin\Release\netcoreapp3.1;X:\Files\Programming\C++\Sum\x64\Release;C:\Users\kubas\.dotnet\tools;C:\Users\kubas\AppData\Roaming\cabal\bin;C:\tools\ghc-9.0.1\bin;C:\Tools\ghc-8.10.4\bin;C:\tools\msys64;C:\Users\kubas\source\repos\Loopover\Loopover\bin\Release\net5.0;C:\Users\kubas\.dotnet\tools;C:\Users\kubas\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\kubas\AppData\Local\Microsoft\WindowsApps;C:\tools\ghc-9.2.1\bin;X:\Files\Programming\C#\YTMusic\YTMusic\bin\Release\net6.0;X:\Files\Programming\C#\RexName\RexName\bin\Release\net6.0;X:\Files\Programming\C#\Loopover\Loopover\bin\Release\net6.0;C:\texlive\2021\bin\win32;X:\Files\Programming\C#\Fsizes\Fsizes\bin\Release\net6.0;C:\Users\kubas\AppData\Roaming\npm
+PATH = C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Razer Chroma SDK\bin;C:\Program Files\Razer Chroma SDK\bin;C:\Program Files (x86)\Razer\ChromaBroadcast\bin;C:\Program Files\Razer\ChromaBroadcast\bin;C:\Program Files\J902\bin\;C:\Program Files\Java\jdk-11.0.7\bin;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;X:\Files\PATH\MemeCutter\;C:\Program Files (x86)\Vim\vim82;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\WINDOWS\system32\config\systemprofile\AppData\Local\Microsoft\WindowsApps;C:\Program Files\dotnet\;C:\ProgramData\chocolatey\bin;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\CodeBlocks\MinGW\bin;X:\Files\Programming\C#\Eval\Eval\bin\Release\net5.0;X:\Files\Programming\C#\Wavg\Wavg\bin\Release\net5.0;X:\Files\Programming\C#\CalT\CalT\bin\Release\net5.0;X:\Files\Programming\C#\Table\Table\bin\Release\net5.0;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;X:\Files\Programming\C#\MProc\MProc\bin\Release\net6.0;C:\Program Files\OpenSSL-Win64\bin;C:\Program Files\Git\cmd;X:\Program Files\Racket;C:\Program Files\nodejs\;C:\Program Files\PowerShell\7\;C:\Users\kubas\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\kubas\AppData\Local\Programs\Python\Python310\;C:\Users\kubas\.cargo\bin;C:\Users\kubas\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\kubas\AppData\Local\Programs\Python\Python39\;C:\Users\kubas\AppData\Local\Programs\Python\Python38\Scripts\;C:\Users\kubas\AppData\Local\Programs\Python\Python38\;C:\Users\kubas\AppData\Local\Microsoft\WindowsApps;C:\MinGW\bin;X:\Files\Programming\C#\-Fin\DayMan (fin)\DayMan\DayMan\bin\Release\net6.0;X:\Files\Programming\C#\-Fin\Primes (fin)\Primes\bin\Release\netcoreapp3.1;X:\Files\Programming\C++\Sum\x64\Release;C:\Users\kubas\.dotnet\tools;C:\Users\kubas\AppData\Roaming\cabal\bin;C:\tools\ghc-9.0.1\bin;C:\Tools\ghc-8.10.4\bin;C:\tools\msys64;C:\Users\kubas\source\repos\Loopover\Loopover\bin\Release\net5.0;C:\Users\kubas\.dotnet\tools;C:\Users\kubas\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\kubas\AppData\Local\Microsoft\WindowsApps;C:\tools\ghc-9.2.1\bin;X:\Files\Programming\C#\YTMusic\YTMusic\bin\Release\net6 
+.0;X:\Files\Programming\C#\RexName\RexName\bin\Release\net6.0;X:\Files\Programming\C#\Loopover\Loopover\bin\Release\net6.0;C:\texlive\2021\bin\win32;X:\Files\Programming\C#\Fsizes\Fsizes\bin\Release\net6.0;C:\Users\kubas\AppData\Roaming\npm
 # environment
 COMPUTERNAME = PCTONDA
 # default
@@ -209,8 +210,7 @@ NUMBER_OF_PROCESSORS = 12
 # environment
 PUBLIC = C:\Users\Public
 # environment
-APPDATA = C 
-:\Users\kubas\AppData\Roaming
+APPDATA = C:\Users\kubas\AppData\Roaming
 # makefile (from 'Makefile', line 4)
 CFLAGS := -Wall -std=c17 -g -D_DEBUG -DASSERT_EXIT
 # environment
@@ -262,9 +262,10 @@ PROCESSOR_IDENTIFIER = AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD
 
 # Directories
 
-# . (key x:/Files/Programming/C/SLang, mtime 1653591922): 15 files, no impossibilities.
+# 
+ . (key x:/Files/Programming/C/SLang, mtime 1653644141): 19 files, no impossibilities.
 
-# 15 files, no impossibilities in 1 directories.
+# 19 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -272,21 +273,28 @@ PROCESSOR_IDENTIFIER = AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD
 
 # Files
 
-obj/Lexer.o: Lexer.c Token.c TokenList.c main.c
+obj/FileSpanList.o: FileSpan.c FileSpanList.c Lexer.c Token.c TokenArray.c main.c
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 15):
 	$(CC) -c $(CFLAGS) $(patsubst obj/%.o, %.c, $@) -o $@
 
-obj/main.o: Lexer.c Token.c TokenList.c main.c
+obj/Lexer.o: FileSpan.c FileSpanList.c Lexer.c Token.c TokenArray.c main.c
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 15):
 	$(CC) -c $(CFLAGS) $(patsubst obj/%.o, %.c, $@) -o $@
 
-debug: obj/Lexer.o obj/Token.o obj/TokenList.o obj/main.o
+obj/main.o: FileSpan.c FileSpanList.c Lexer.c Token.c TokenArray.c main.c
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 15):
+	$(CC) -c $(CFLAGS) $(patsubst obj/%.o, %.c, $@) -o $@
+
+debug: obj/FileSpan.o obj/FileSpanList.o obj/Lexer.o obj/Token.o obj/TokenArray.o obj/main.o
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -301,6 +309,18 @@ Makefile:
 #  Successfully updated.
 
 # Not a target:
+FileSpanList.c:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+TokenArray.c:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
 Token.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -313,11 +333,10 @@ clean:
 #  recipe to execute (from 'Makefile', line 21):
 	del $(patsubst obj/%, obj\\%, $(OBJS))
 
-obj/TokenList.o: Lexer.c Token.c TokenList.c main.c
+obj/TokenArray.o: FileSpan.c FileSpanList.c Lexer.c Token.c TokenArray.c main.c
 #  Implicit rule search has not been done.
 #  Modification time never checked.
-#  File has not been u 
-pdated.
+#  File has not been updated.
 #  recipe to execute (from 'Makefile', line 15):
 	$(CC) -c $(CFLAGS) $(patsubst obj/%.o, %.c, $@) -o $@
 
@@ -328,6 +347,7 @@ pdated.
 #  File has not been updated.
 
 # Not a target:
+ 
 all:
 #  Command line target.
 #  Implicit rule search has been done.
@@ -348,12 +368,19 @@ main.c:
 #  File has not been updated.
 
 # Not a target:
-TokenList.c:
+FileSpan.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
-obj/Token.o: Lexer.c Token.c TokenList.c main.c
+obj/Token.o: FileSpan.c FileSpanList.c Lexer.c Token.c TokenArray.c main.c
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 15):
+	$(CC) -c $(CFLAGS) $(patsubst obj/%.o, %.c, $@) -o $@
+
+obj/FileSpan.o: FileSpan.c FileSpanList.c Lexer.c Token.c TokenArray.c main.c
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -373,20 +400,21 @@ Lexer.c:
 #  Modification time never checked.
 #  File has not been updated.
 
-# files hash-table stats:
-# Load=16/1024=2%, Rehash=0, Collisions=0/39=0%
+# files hash-table 
+ stats:
+# Load=20/1024=2%, Rehash=0, Collisions=1/49=2%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 26 / storage = 205 B / avg = 7 B
-# current buf: size = 8174 B / used = 205 B / count = 26 / avg = 7 B
+# strcache buffers: 1 (0) / strings = 32 / storage = 294 B / avg = 9 B
+# current buf: size = 8174 B / used = 294 B / count = 32 / avg = 9 B
 
-# strcache performance: lookups = 47 / hit rate = 44%
+# strcache performance: lookups = 59 / hit rate = 45%
 # hash-table stats:
-# Load=26/8192=0%, Rehash=0, Collisions=0/47=0%
-# Finished Make data base on Thu May 26 21:10:58 2022
+# Load=32/8192=0%, Rehash=0, Collisions=0/59=0%
+# Finished Make data base on Fri May 27 12:18:34 2022
 
  
