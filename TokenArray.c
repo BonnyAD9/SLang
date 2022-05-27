@@ -34,7 +34,7 @@ TokenArray createTokenArray(size_t length)
     TokenArray arr =
     {
         .length = length,
-        .data = malloc(sizeof(Token) * length),
+        .data = calloc(length, sizeof(Token)),
     };
 
     assert(arr.data, "createTokenArray: TokenArray.data failed to allocate data of size %I64d\n", length);

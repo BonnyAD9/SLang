@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "Token.h"
 #include "TokenArray.h"
 #include "FileSpan.h"
 #include "List.h"
 #include "Assert.h"
+#include "ErrorToken.h"
 
 /**
  * @brief splits the file contents into FileSpans
@@ -17,14 +19,6 @@
  * @return List list of FileSpans
  */
 List _tokenize(FILE* in);
-/**
- * @brief determines whether the given character is whitespace
- * 
- * @param c character to examine
- * @return true given character is whitespace
- * @return false given character is not whitespace
- */
-bool _isWhitespace(const char c);
 
 /**
  * @brief reads quoted text
@@ -39,9 +33,12 @@ bool _isWhitespace(const char c);
  */
 size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size_t* line, size_t* col);
 
-TokenArray lex(FILE* in)
+TokenArray lex(FILE* in, List* errors)
 {
     assert(in, "lex: parameter in was null");
+    assert(errors, "lex: parameter errors was null");
+
+    List errs = newList(ErrorToken);
     List list = _tokenize(in);
     TokenArray arr = createTokenArray(list.length);
 
@@ -80,16 +77,21 @@ TokenArray lex(FILE* in)
         case '"':
             if (span.length == 1 || span.str[span.length - 1] != '"')
             {
-                arr.data[i] = fileSpanToken(INVALID, span);
+                listAdd(errs, createErrorToken(ERROR, span, "string literal is not closed", "try adding closing \""), ErrorToken);
                 continue;
             }
             arr.data[i] = fileSpanTokenPart(LITERAL_STRING, span, 1, span.length - 2);
             freeFileSpan(span);
             continue;
         case '\'':
-            if (span.length != 3 || span.str[2] != '\'')
+            if (span.length != 3)
             {
-                arr.data[i] = fileSpanToken(INVALID, span);
+                listAdd(errs, createErrorToken(ERROR, span, "char literal has invalid length", "char literal can only contain one character"), ErrorToken);
+                continue;
+            }
+            else if (span.str[3] != '\'')
+            {
+                listAdd(errs, createErrorToken(ERROR, span, "char literal is not closed", "try adding closing '"), ErrorToken);
                 continue;
             }
             arr.data[i] = fileSpanCharToken(LITERAL_CHAR, span.str[1], span);
@@ -110,8 +112,77 @@ TokenArray lex(FILE* in)
         default:
             break;
         }
+        if (isdigit(span.str[0]))
+        {
+            long long num = 0;
+            char* c = span.str;
+            for (; *c && isdigit(*c); c++)
+                num = num * 10 + *c - '0';
+            switch (*c)
+            {
+            case 0:
+                arr.data[i] = fileSpanIntToken(LITERAL_INTEGER, num, span);
+                freeFileSpan(span);
+                continue;
+            case '.':
+            {
+                double decimal = num;
+                double div = 10;
+                for (c++; *c && isdigit(*c); c++, div *= 10)
+                    decimal += (*c - '0') / div;
+                if (*c)
+                    break;
+                arr.data[i] = fileSpanDecToken(LITERAL_FLOAT, decimal, span);
+                freeFileSpan(span);
+                continue;
+            }
+            default:
+                break;
+            }
+            listAdd(errs, createErrorToken(ERROR, span, "invalid number literal", "number literals cannot contain other characters than digits and single ."), ErrorToken);
+            continue;
+        }
+        if (strcmp(span.str, "def") == 0)
+        {
+            arr.data[i] = fileSpanTokenPos(KEYWORD_DEF, span);
+            freeFileSpan(span);
+            continue;
+        }
+        if (strcmp(span.str, "struct") == 0)
+        {
+            arr.data[i] = fileSpanTokenPos(KEYWORD_STRUCT, span);
+            freeFileSpan(span);
+            continue;
+        }
+        if (strcmp(span.str, "set") == 0)
+        {
+            arr.data[i] = fileSpanTokenPos(KEYWORD_SET, span);
+            freeFileSpan(span);
+            continue;
+        }
+        if (i == 0)
+        {
+            listAdd(errs, createErrorToken(ERROR, span, "cannot use identifiers directly", "try ecapsulating it in []"), ErrorToken);
+            continue;
+        }
+        switch (arr.data[i - 1].type)
+        {
+        case PUNCTUATION_BRACKET_OPEN:
+            arr.data[i] = fileSpanToken(IDENTIFIER_FUNCTION, span);
+            continue;
+        case KEYWORD_STRUCT:
+            arr.data[i] = fileSpanToken(IDENTIFIER_STRUCT, span);
+            continue;
+        default:
+            arr.data[i] = fileSpanToken(IDENTIFIER_VARIABLE, span);
+            continue;
+        }
     }
     freeList(list);
+    if (errors)
+        *errors = errs;
+    else
+        listDeepFree(list, ErrorToken, t, freeErrorToken(t));
     return arr;
 }
 

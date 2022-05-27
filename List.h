@@ -14,9 +14,10 @@
 #define STRING_LIST_ALLOC_SIZE 128LL
 #endif // STRING_LIST_ALLOC_SIZE
 
-#define newList(type) createList(sizeof(type))
-#define listAdd(list, item, type) {type __item=item;listAddP(&list,&__item);}
-#define listGet(list, index, type) *(type*)listGetP(list, index)
+#define newList(__type) createList(sizeof(__type))
+#define listAdd(__list, __item, __type) {__type __i=__item;listAddP(&__list,&__i);}
+#define listGet(__list, __index, __type) *(__type*)listGetP(__list, __index)
+#define listDeepFree(__list, __type, __name, __free) {for(size_t __i=0;__i<__list.length;__i++){__type __name=*(__type*)listGetP(__list,__i);__free;}freeList(__list);}
 
 /**
  * @brief represents list of strings

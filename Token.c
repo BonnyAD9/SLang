@@ -142,10 +142,10 @@ void printToken(FILE* out, Token token)
         fprintf(out, "blockComment(%s)", token.string);
         return;
     case PUNCTUATION_BRACKET_OPEN:
-        fprintf(out, "(");
+        fprintf(out, "[");
         return;
     case PUNCTUATION_BRACKET_CLOSE:
-        fprintf(out, ")");
+        fprintf(out, "]");
         return;
     case IDENTIFIER_VARIABLE:
         fprintf(out, "variable(%s)", token.string);
@@ -178,7 +178,7 @@ void printToken(FILE* out, Token token)
         fprintf(out, "set");
         return;
     case OPERATOR_TRUST:
-        fprintf(out, "extern");
+        fprintf(out, ";");
         return;
     case OPERATOR_NOTHING:
         fprintf(out, "_");

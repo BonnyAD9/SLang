@@ -1,4 +1,4 @@
-[! factorial' [[int int] int]]
+[; factorial' [[int int] int]]
 
 /**
  * @param num number to calculate factorial
@@ -16,5 +16,7 @@
 ]]
 
 [echo "result:
-" [factorial 7]]
+" [factorial 123]]
+
+[echo "pi" 3.1415926535879862643]
 // hmm
