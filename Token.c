@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 void freeToken(Token token)
 {
@@ -87,6 +88,41 @@ Token characterToken(TokenType type, char character, size_t line, size_t col)
     return t;
 }
 
+Token fileSpanTokenPos(TokenType type, FileSpan span)
+{
+    return createToken(type, span.line, span.col);
+}
+
+Token fileSpanIntToken(TokenType type, long long value, FileSpan span)
+{
+    return integerToken(type, value, span.line, span.col);
+}
+
+Token fileSpanDecToken(TokenType type, double value, FileSpan span)
+{
+    return decimalToken(type, value, span.line, span.col);
+}
+
+Token fileSpanCharToken(TokenType type, char value, FileSpan span)
+{
+    return characterToken(type, value, span.line, span.col);
+}
+
+Token fileSpanTokenPart(TokenType type, FileSpan span, size_t start, size_t length)
+{
+    assert(span.str, "fileSpanTokenPart: given span has no string");
+    assert(start + length <= span.length, "fileSpanTokenPart: geven span of the span is outside of range (max: %I64d, is: %I64d)", span.length, start + length);
+
+    char* str = malloc((length + 1) * sizeof(char));
+    
+    assert(str, "fileSpanTokenPart: failed to allocate string of size %I64d", length + 1);
+    
+    str[length] = 0;
+    strncpy(str, span.str + start, length);
+
+    return stringToken(type, str, span.line, span.col);
+}
+
 void printToken(FILE* out, Token token)
 {
     switch (token.type)
@@ -139,11 +175,26 @@ void printToken(FILE* out, Token token)
     case KEYWORD_SET:
         fprintf(out, "set");
         return;
-    case KEYWORD_EXTERN:
+    case OPERATOR_TRUST:
         fprintf(out, "extern");
         return;
     case OPERATOR_NOTHING:
         fprintf(out, "_");
+        return;
+    case STORAGE_INTEGER:
+        fprintf(out, "int");
+        return;
+    case STORAGE_FLOAT:
+        fprintf(out, "float");
+        return;
+    case STORAGE_STRING:
+        fprintf(out, "string");
+        return;
+    case STORAGE_CHAR:
+        fprintf(out, "char");
+        return;
+    case MODIFIER_POINTER:
+        fprintf(out, "*");
         return;
     default:
         fprintf(out, "unknown");

@@ -14,7 +14,7 @@ typedef enum TokenType
 {
     UNDEFINED = 0,
     INVALID,
-    COMMENT_LINE, // hello
+    COMMENT_LINE, // // hello
     COMMENT_BLOCK, // /* hello */
     PUNCTUATION_BRACKET_OPEN, // [
     PUNCTUATION_BRACKET_CLOSE, // ]
@@ -28,8 +28,13 @@ typedef enum TokenType
     KEYWORD_DEF, // def
     KEYWORD_STRUCT, // struct
     KEYWORD_SET, // set
-    KEYWORD_EXTERN, // extern
+    OPERATOR_TRUST, // ;
     OPERATOR_NOTHING, // _
+    STORAGE_INTEGER, // int
+    STORAGE_FLOAT, // float
+    STORAGE_STRING, // string
+    STORAGE_CHAR, // char
+    MODIFIER_POINTER, // *
 } TokenType;
 
 /**
@@ -71,10 +76,60 @@ void printTokenPos(FILE* out, Token token, const char* filename);
  * @brief creates token from file span
  * 
  * @param type type of the token
- * @param span span with the string an file position
+ * @param span span with the string and position in file
  * @return Token new instance
  */
 Token fileSpanToken(TokenType type, FileSpan span);
+
+/**
+ * @brief creates token from file span with only part of the string
+ * 
+ * @param type type of the token
+ * @param span span with the string and position in file
+ * @param start index of first character to take
+ * @param length total number of characters to take
+ * @return Token bew instance
+ */
+Token fileSpanTokenPart(TokenType type, FileSpan span, size_t start, size_t length);
+
+/**
+ * @brief creates token from file span
+ * 
+ * @param type type of the token
+ * @param span span with the position in file
+ * @return Token new instance
+ */
+Token fileSpanTokenPos(TokenType type, FileSpan span);
+
+/**
+ * @brief creates token with int value
+ * 
+ * @param type type of the token
+ * @param value value of the token
+ * @param span span with the position in file
+ * @return Token 
+ */
+Token fileSpanIntToken(TokenType type, long long value, FileSpan span);
+
+/**
+ * @brief creates token with decimal value
+ * 
+ * @param type type of the token
+ * @param value value of the token
+ * @param span span with the position in file
+ * @return Token 
+ */
+Token fileSpanDecToken(TokenType type, double value, FileSpan span);
+
+/**
+ * @brief creates token with char value
+ * 
+ * @param type type of the token
+ * @param value value of the token
+ * @param span span with the position in file
+ * @return Token 
+ */
+Token fileSpanCharToken(TokenType type, char value, FileSpan span);
 
 /**
  * @brief Create a Token object with no data

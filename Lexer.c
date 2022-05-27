@@ -39,7 +39,72 @@ TokenArray lex(FILE* in)
     FileSpanList list = _tokenize(in);
     TokenArray arr = createTokenArray(list.length);
     for (size_t i = 0; i < arr.length; i++)
-        arr.data[i] = fileSpanToken(LITERAL_STRING, list.data[i]);
+    {
+        FileSpan span = list.data[i];
+        switch (span.str[0])
+        {
+        case 0:
+            dprintf("lex: empty token at position %I64d:%I64d", span.line, span.col);
+            freeFileSpan(span);
+            continue;
+        case '[':
+            arr.data[i] = fileSpanTokenPos(PUNCTUATION_BRACKET_OPEN, span);
+            freeFileSpan(span);
+            continue;
+        case ']':
+            arr.data[i] = fileSpanTokenPos(PUNCTUATION_BRACKET_CLOSE, list.data[i]);
+            freeFileSpan(span);
+            continue;
+        case '/':
+            switch(span.str[1])
+            {
+            case '/':
+                arr.data[i] = fileSpanTokenPart(COMMENT_LINE, span, 2, span.length - 2);
+                freeFileSpan(span);
+                continue;
+            case '*':
+                arr.data[i] = fileSpanTokenPart(COMMENT_BLOCK, span, 2, span.length < 5 ? 0 : span.length - 4);
+                freeFileSpan(span);
+                continue;
+            default:
+                break;
+            }
+            break;
+        case '"':
+            if (span.length == 1 || span.str[span.length - 1] != '"')
+            {
+                arr.data[i] = fileSpanToken(INVALID, span);
+                continue;
+            }
+            arr.data[i] = fileSpanTokenPart(LITERAL_STRING, span, 1, span.length - 2);
+            freeFileSpan(span);
+            continue;
+        case '\'':
+            if (span.length != 3 || span.str[2] != '\'')
+            {
+                arr.data[i] = fileSpanToken(INVALID, span);
+                continue;
+            }
+            arr.data[i] = fileSpanCharToken(LITERAL_CHAR, span.str[1], span);
+            freeFileSpan(span);
+            continue;
+        case ';':
+            if (span.length != 1)
+                break;
+            arr.data[i] = fileSpanTokenPos(OPERATOR_TRUST, span);
+            freeFileSpan(span);
+            continue;
+        case '_':
+            if (span.length != 1)
+                break;
+            arr.data[i] = fileSpanTokenPos(OPERATOR_NOTHING, span);
+            freeFileSpan(span);
+            continue;
+        default:
+            break;
+        }
+    }
+    freeFileSpanList(list, false);
     return arr;
 }
 

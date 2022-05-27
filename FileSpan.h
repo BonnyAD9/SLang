@@ -6,19 +6,10 @@
 typedef struct FileSpan
 {
     char* str;
+    size_t length;
     size_t line;
     size_t col;
 } FileSpan;
-
-/**
- * @brief Create a FileSpan object
- * 
- * @param str value of the span
- * @param line line number in file
- * @param col column number in file
- * @return FileSpan new instance
- */
-FileSpan createFileSpan(char* str, size_t line, size_t col);
 
 /**
  * @brief Copies file span from buffer

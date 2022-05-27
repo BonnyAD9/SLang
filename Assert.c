@@ -24,6 +24,18 @@ int assert(bool val, const char *msg, ...)
     return res;
 }
 
+int dprintf(const char *msg, ...)
+{
+    va_list args;
+    va_start(args, msg);
+
+    int res = vfprintf(stdout, msg, args);
+
+    va_end(args);
+    printf("\n");
+    return res;
+}
+
 int except(const char *msg, ...)
 {
     va_list args;

@@ -5,17 +5,6 @@
 
 #include "Assert.h"
 
-FileSpan createFileSpan(char* str, size_t line, size_t col)
-{
-    FileSpan span =
-    {
-        .str = str,
-        .line = line,
-        .col = col,
-    };
-    return span;
-}
-
 FileSpan copyFileSpanFrom(const char* buffer, size_t length, size_t line, size_t col)
 {
     assert(buffer, "copyFileSpanFom: parameter buffer was null");
@@ -23,7 +12,14 @@ FileSpan copyFileSpanFrom(const char* buffer, size_t length, size_t line, size_t
     str[length] = 0;
     assert(str, "copyFileSpanFrom: failed to allocate string of length %I64d", length + 1);
     strncpy(str, buffer, length);
-    return createFileSpan(str, line, col);
+    FileSpan span =
+    {
+        .str = str,
+        .length = length,
+        .line = line,
+        .col = col,
+    };
+    return span;
 }
 
 void freeFileSpan(FileSpan span)

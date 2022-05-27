@@ -7,8 +7,11 @@
 
 int assert(bool val, const char* msg, ...);
 
+int dprintf(const char* msg, ...);
+
 #else // _DEBUG
 #define assert(val, msg, ...)
+#define dprintf(msg, ...)
 #endif // _DEBUG
 
 int except(const char* msg, ...);
