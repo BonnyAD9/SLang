@@ -10,8 +10,10 @@
  * @returns result of the factorial
  */
 [set factorial [def [/*/num]
-    [factorial' num 1]
+    [facto//rial' num 1]
 ]]
 
-[echo [factorial 7]]
+[echo "result:
+" [factorial 7]]
 // hmm
+"\
