@@ -6,9 +6,10 @@
 
 int main()
 {
-    FILE *f = fopen("testFile.sl", "r");
+    char* filename = "testFile.sl";
+    FILE *f = fopen(filename, "r");
     TokenArray arr = lex(f);
     fclose(f);
-    printTokenArray(stdout, arr);
+    printTokenArrayPos(stdout, arr, filename);
     return EXIT_SUCCESS;
 }

@@ -59,6 +59,15 @@ typedef struct Token
 void printToken(FILE* out, Token token);
 
 /**
+ * @brief prints token with its position
+ * 
+ * @param out where to print
+ * @param token token to print
+ * @param filename file in which the token is
+ */
+void printTokenPos(FILE* out, Token token, const char* filename);
+
+/**
  * @brief creates token from file span
  * 
  * @param type type of the token

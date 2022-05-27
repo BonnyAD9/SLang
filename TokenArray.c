@@ -18,6 +18,17 @@ void printTokenArray(FILE* out, TokenArray arr)
     }
 }
 
+void printTokenArrayPos(FILE* out, TokenArray arr, const char* filename)
+{
+    assert(out, "printTokenArray: out was null\n");
+
+    for (size_t i = 0; i < arr.length; i++)
+    {
+        printTokenPos(out, arr.data[i], filename);
+        fprintf(out, "\n");
+    }
+}
+
 TokenArray createTokenArray(size_t length)
 {
     TokenArray arr =

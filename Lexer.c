@@ -59,21 +59,27 @@ FileSpanList _tokenize(FILE* in)
         switch (chr)
         {
         case '\n':
+            if (pos != 0)
+            {
+                fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col - pos));
+                pos = 0;
+            }
             line++;
             col = 0;
+            continue;
         case ' ':
         case '\t':
         case '\r':
             if (pos == 0)
                 continue;
-            fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col));
+            fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col - pos));
             pos = 0;
             continue;
         case '[':
         case ']':
             if (pos != 0)
             {
-                fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col));
+                fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col - pos));
                 pos = 0;
             }
             character = chr;

@@ -25,6 +25,15 @@ typedef struct TokenArray
 void printTokenArray(FILE* out, TokenArray arr);
 
 /**
+ * @brief prints tokens with their position
+ * 
+ * @param out where to print
+ * @param arr array to print
+ * @param filename name of file with the tokens
+ */
+void printTokenArrayPos(FILE* out, TokenArray arr, const char* filename);
+
+/**
  * @brief Create a Token Array object
  * 
  * @param length length of the array
