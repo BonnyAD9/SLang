@@ -14,7 +14,7 @@ FileSpanList createFileSpanList()
         .length = 0,
     };
 
-    assert(list.data, "createStringList: cannot allocate list data of size %lld", STRING_LIST_START_SIZE);
+    assert(list.data, "createStringList: cannot allocate list data of size %I64d", STRING_LIST_START_SIZE);
 
     return list;
 }
@@ -39,7 +39,7 @@ void fileSpanListAdd(FileSpanList* list, FileSpan item)
     {
         size_t newSize = list->allocated < STRING_LIST_ALLOC_SIZE ? list->allocated * 2 : list->allocated + STRING_LIST_ALLOC_SIZE;
         FileSpan* newData = realloc(list->data, newSize * sizeof(FileSpan));
-        assert(newData, "stringListAdd: cannot reallocate memory of size %lld", newSize);
+        assert(newData, "stringListAdd: cannot reallocate memory of size %I64d", newSize);
         list->data = newData;
         list->allocated = newSize;
     }

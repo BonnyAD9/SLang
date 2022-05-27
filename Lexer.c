@@ -46,6 +46,7 @@ TokenArray lex(FILE* in)
 FileSpanList _tokenize(FILE* in)
 {
     assert(in, "_tokenize: parameter in was null");
+    assert(LEXER_READ_BUFFER_SIZE > 1, "_tokenize: minimum LEXER_READ_BUFFER_SIZE is 2 but it is %I64d", LEXER_READ_BUFFER_SIZE);
     FileSpanList list = createFileSpanList();
     char buffer[LEXER_READ_BUFFER_SIZE];
     size_t pos = 0;
@@ -97,6 +98,75 @@ FileSpanList _tokenize(FILE* in)
             }
             pos = _readQuote(in, buffer, LEXER_READ_BUFFER_SIZE, chr, &line, &col);
             continue;
+        case '/':
+            if (pos == 0 || buffer[pos - 1] != '/')
+            {
+                if (pos >= LEXER_READ_BUFFER_SIZE)
+                    except("_tokenize: token is too long, max size is %I64d", LEXER_READ_BUFFER_SIZE);
+                buffer[pos] = '/';
+                pos++;
+                continue;
+            }
+            if (pos > 1)
+                fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos - 1, line, col - pos));
+            pos = 2;
+            buffer[0] = '/';
+            buffer[1] = '/';
+            while ((chr = fgetc(in)) != EOF)
+            {
+                col++;
+                if (chr == '\n')
+                {
+                    fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col - pos));
+                    pos = 0;
+                    line++;
+                    col = 0;
+                    break;
+                }
+                if (pos >= LEXER_READ_BUFFER_SIZE)
+                    except("_tokenize: token is too long, max size is %I64d", LEXER_READ_BUFFER_SIZE);
+                buffer[pos] = chr;
+                pos++;
+            }
+            continue;
+        case '*':
+            if (pos == 0 || buffer[pos - 1] != '/')
+            {
+                if (pos >= LEXER_READ_BUFFER_SIZE)
+                    except("_tokenize: token is too long, max size is %I64d", LEXER_READ_BUFFER_SIZE);
+                buffer[pos] = '*';
+                pos++;
+                continue;
+            }
+            if (pos > 1)
+                fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos - 1, line, col - pos));
+            pos = 2;
+            buffer[0] = '/';
+            buffer[1] = '*';
+            {
+                size_t comLine = line;
+                size_t comCol = col - 1;
+                while ((chr = fgetc(in)) != EOF)
+                {
+                    col++;
+                    if (chr == '\n')
+                    {
+                        line++;
+                        col = 0;
+                    }
+                    if (pos >= LEXER_READ_BUFFER_SIZE)
+                        except("_tokenize: token is too long, max size is %I64d", LEXER_READ_BUFFER_SIZE);
+                    buffer[pos] = chr;
+                    pos++;
+                    if (chr == '/' && buffer[pos - 2] == '*')
+                    {
+                        fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, comLine, comCol));
+                        pos = 0;
+                        break;
+                    }
+                }
+            }
+            continue;
         default:
             if (pos >= LEXER_READ_BUFFER_SIZE)
                 except("_tokenize: token is too long, max size is %I64d", LEXER_READ_BUFFER_SIZE);
@@ -105,6 +175,8 @@ FileSpanList _tokenize(FILE* in)
             continue;
         }
     }
+    if (pos != 0)
+        fileSpanListAdd(&list, copyFileSpanFrom(buffer, pos, line, col - pos));
     return list;
 }
 
