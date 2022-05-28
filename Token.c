@@ -186,21 +186,6 @@ void printToken(FILE* out, Token token)
     case OPERATOR_NOTHING:
         fprintf(out, "_");
         return;
-    case STORAGE_INTEGER:
-        fprintf(out, "int");
-        return;
-    case STORAGE_FLOAT:
-        fprintf(out, "float");
-        return;
-    case STORAGE_STRING:
-        fprintf(out, "string");
-        return;
-    case STORAGE_CHAR:
-        fprintf(out, "char");
-        return;
-    case MODIFIER_POINTER:
-        fprintf(out, "*");
-        return;
     default:
         fprintf(out, "unknown");
         return;

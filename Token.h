@@ -31,11 +31,6 @@ typedef enum TokenType
     KEYWORD_SET, // set
     KEYWORD_DEFINED, // defined
     OPERATOR_NOTHING, // _
-    STORAGE_INTEGER, // int
-    STORAGE_FLOAT, // float
-    STORAGE_STRING, // string
-    STORAGE_CHAR, // char
-    MODIFIER_POINTER, // *
 } TokenType;
 
 /**
