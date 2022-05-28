@@ -177,8 +177,8 @@ void printToken(FILE* out, Token token)
     case KEYWORD_SET:
         fprintf(out, "set");
         return;
-    case OPERATOR_TRUST:
-        fprintf(out, ";");
+    case KEYWORD_DEFINED:
+        fprintf(out, "defined");
         return;
     case OPERATOR_NOTHING:
         fprintf(out, "_");

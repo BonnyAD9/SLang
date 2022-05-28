@@ -48,7 +48,7 @@ void printErrorToken(FILE* out, ErrorToken token, const char* filename)
         break;
     }
 
-    fprintf(out, "%s:%I64d:%I64d: %s%s\x1b[0m %s\n\t%s%s\x1b[0m\n\t\x1b[92mhelp:\x1b[0m %s",
+    fprintf(out, "%s:%I64d:%I64d:\t%s%s\x1b[0m %s\n\t%s%s\x1b[0m\n\t\x1b[92mhelp:\x1b[0m %s",
             filename, token.line, token.col,
             msgColor, msgType, token.message,
             msgColor, token.token,

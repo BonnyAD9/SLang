@@ -1,4 +1,4 @@
-[; factorial' [[int int] int]]
+[defined factorial' [[int int] int]]
 
 /**
  * @param num number to calculate factorial
@@ -11,12 +11,12 @@
 [set factorial' [def [/*int*/num /*int*/hold]
     [if [<= num 1]
         1
-        [factorial' [- num 1] [* hold num]]
+        [factorial' [+ num -1] [* hold num]]
     ]
 ]]
 
 [echo "result:
-" [factorial 123]]
+" [factorial 9223372036854775807] struct]
 
-[echo 'pi' 3.14159265358979323846264338327950288419716939937510]
+[echo '-pi' -3.14159265358979323846264338327950288419716939937510]
 // hmm

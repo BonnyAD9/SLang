@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.html": "html",
-        "lexer.h": "c"
+        "lexer.h": "c",
+        "list.h": "c"
     }
 }

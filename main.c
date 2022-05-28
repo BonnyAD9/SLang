@@ -33,6 +33,10 @@ int main()
         }
     );
     printf("#Errors: %I64d\n#Warnings: %I64d\n#Infos: %I64d\n", errors, warnings, infos);
+    listForEach(tokens, Token, t,
+        printTokenPos(stdout, t, filename);
+        printf("\n");
+    )
     listDeepFree(tokens, Token, t, freeToken(t));
     listDeepFree(errs, ErrorToken, t, freeErrorToken(t));
     return EXIT_SUCCESS;

@@ -28,7 +28,7 @@ typedef enum TokenType
     KEYWORD_DEF, // def
     KEYWORD_STRUCT, // struct
     KEYWORD_SET, // set
-    OPERATOR_TRUST, // ;
+    KEYWORD_DEFINED, // defined
     OPERATOR_NOTHING, // _
     STORAGE_INTEGER, // int
     STORAGE_FLOAT, // float
