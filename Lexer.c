@@ -38,6 +38,17 @@ List _tokenize(FILE* in);
 size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size_t* line, size_t* col);
 
 /**
+ * @brief reads positive int from string
+ * 
+ * @param str string to read from
+ * @param endptr pointer to the first non-digit char
+ * @param base base in which to convert
+ * @param overflow this is set to true if the integer overflows the long long limit
+ * @return long readed integer
+ */
+long long _readInt(char* str, char** endptr, long long base, bool* overflow);
+
+/**
  * @brief checks the keyword and adds it to the list
  * 
  * @param kw keyword to check for
@@ -49,6 +60,14 @@ size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size
  * @return false keyword not matched
  */
 bool _checkKeyword(const char* kw, TokenType type, FileSpan span, List* tokens, List* errors);
+
+/**
+ * @brief converts the given char to numnerical digit
+ * 
+ * @param digit char to convert
+ * @return long the number it represents
+ */
+long long _getDigit(char digit);
 
 List lex(FILE* in, List* errors)
 {
@@ -150,20 +169,12 @@ List lex(FILE* in, List* errors)
         // checking numbers
         if (isdigit(span.str[0]) || (span.str[0] == '-' && isdigit(span.str[1])))
         {
-            long long num = 0;
             char* c = span.str;
             bool overflow = false;
             // check for negative values
             bool isNegative = *c == '-';
-            c += isNegative;
             // read whole part values
-            for (; *c && isdigit(*c); c++)
-            {
-                // check for overflow
-                if (num > LONG_LONG_MAX / 10 || (num == LONG_LONG_MAX / 10 && *c - '0' > LONG_LONG_MAX % 10))
-                    overflow = true;
-                num = num * 10 + *c - '0';
-            }
+            long long num = _readInt(c + isNegative, &c, 10, &overflow);
             switch (*c)
             {
             // if it doesn't continue, it is integer
@@ -203,6 +214,38 @@ List lex(FILE* in, List* errors)
                     freeFileSpan(span);
                 continue;
             }
+            case 'x':
+                num = _readInt(c + 1, &c, 16, &overflow);
+                if (*c)
+                    break;
+                listAdd(tokens, fileSpanIntToken(LITERAL_INTEGER, isNegative ? -num : num, span), Token);
+                if (overflow)
+                    listAdd(errs, createErrorToken(WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorToken) // there shouldn't be ;
+                        else freeFileSpan(span);
+                continue;
+            case 'b':
+                num = _readInt(c + 1, &c, 2, &overflow);
+                if (*c)
+                    break;
+                listAdd(tokens, fileSpanIntToken(LITERAL_INTEGER, isNegative ? -num : num, span), Token);
+                if (overflow)
+                    listAdd(errs, createErrorToken(WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorToken) // there shouldn't be ;
+                        else freeFileSpan(span);
+                continue;
+            case 'z':
+                if (num < 2 || num > 36)
+                {
+                    listAdd(errs, createErrorToken(ERROR, span, "base must be between 2 and 36 (inclusive)", "change the number before z to be in that range"), ErrorToken);
+                    continue;
+                }
+                num = _readInt(c + 1, &c, num, &overflow);
+                if (*c)
+                    break;
+                listAdd(tokens, fileSpanIntToken(LITERAL_INTEGER, isNegative ? -num : num, span), Token);
+                if (overflow)
+                    listAdd(errs, createErrorToken(WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorToken) // there shouldn't be ;
+                        else freeFileSpan(span);
+                continue;
             // otherwise break into error
             default:
                 break;
@@ -254,8 +297,46 @@ List lex(FILE* in, List* errors)
     return tokens;
 }
 
+long long _getDigit(char digit)
+{
+    if (digit < '0')
+        return 37;
+    if (digit <= '9')
+        return digit - '0';
+    if (digit < 'A')
+        return 37;
+    if (digit <= 'Z')
+        return digit - 'A' + 10;
+    if (digit < 'a')
+        return 37;
+    return digit - 'a' + 10;
+}
+
+long long _readInt(char* str, char** endptr, long long base, bool* overflow)
+{
+    assert(str, "_readInt: parameter str was null");
+    assert(endptr, "_readInt: parameter endptr was null");
+    assert(base <= 36 && base >= 2, "_readInt: parameter base was out of range (%I64d)", base);
+    assert(overflow, "_readInt: parameter overflow was null");
+
+    long long num = 0;
+    long long digit;
+    for (; *str && (digit = _getDigit(*str)) < base; str++)
+    {
+        if (num > LONG_LONG_MAX / base || (num == LONG_LONG_MAX / base && digit > LONG_LONG_MAX % base))
+            *overflow = true;
+        num = num * base + digit;
+    }
+    *endptr = str;
+    return num;
+}
+
 bool _checkKeyword(const char* kw, TokenType type, FileSpan span, List* tokens, List* errors)
 {
+    assert(kw, "_checkKeyword: parameter kw was null");
+    assert(tokens, "_checkKeyword: parameter tokens was null");
+    assert(errors, "_checkKeyword: parameter errors was null");
+
     if (strcmp(kw, span.str) == 0)
     {
         if (listGet(*tokens, tokens->length - 1, Token).type != PUNCTUATION_BRACKET_OPEN)
