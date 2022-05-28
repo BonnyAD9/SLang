@@ -1,4 +1,5 @@
 [defined factorial' [[int int] int]]
+[defined pi float]
 
 /**
  * @param num number to calculate factorial

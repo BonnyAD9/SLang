@@ -99,6 +99,12 @@ List lex(FILE* in, List* errors)
         // [ is always token by itself
         case '[':
             assert(span.length == 1, "lex: [ is not by itself in token '%s' at position :%I64d:%I64d", span.str, span.line, span.col);
+            if (defd == nest)
+            {
+                Token* t = listGetP(tokens, tokens.length - 1);
+                if (t->type == IDENTIFIER_STRUCT)
+                    t->type = IDENTIFIER_FUNCTION;
+            }
             listAdd(tokens, fileSpanIntToken(PUNCTUATION_BRACKET_OPEN, nest, span), Token);
             freeFileSpan(span);
             nest++;
@@ -311,6 +317,12 @@ List lex(FILE* in, List* errors)
 
         if (defd != -1)
         {
+            if (defd == nest)
+            {
+                Token* t = listGetP(tokens, tokens.length - 1);
+                if (t->type == IDENTIFIER_STRUCT)
+                    t->type = IDENTIFIER_VARIABLE;
+            }
             listAdd(tokens, fileSpanToken(IDENTIFIER_STRUCT, span), Token);
             continue;
         }
