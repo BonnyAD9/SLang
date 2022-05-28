@@ -601,21 +601,26 @@ size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size
             buf[2] = 0;
             if ((chr = fgetc(in)) == EOF)
             {
+                (*col)++;
                 buffer[pos] = 'x';
                 return pos + 1;
             }
             buf[0] = chr;
             if ((chr = fgetc(in)) == EOF)
             {
+                (*col)++;
                 buffer[pos] = 'x';
                 pos++;
                 if (pos >= bufferSize)
-                    except("_readQuote: quoted token is too long, max size is %I64d", bufferSize);
+                    except("_readQuote: :%I64d:%I64d: quoted token is too long, max size is %I64d", *line, *col, bufferSize);
                 buffer[pos] = buf[0];
                 return pos + 1;
             }
             buf[1] = chr;
-            buffer[pos] = _readInt(buf, NULL, 16, NULL);
+            char* end;
+            buffer[pos] = _readInt(buf, &end, 16, NULL);
+            if (*end)
+                except("_readQuote: :%I64d:%I64d: inavlid escape sequence", *line, *col);
             break;
         }
         // any other character after \ will be readed literaly (\\, \")
