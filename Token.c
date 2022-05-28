@@ -206,6 +206,6 @@ void printToken(FILE* out, Token token)
 
 void printTokenPos(FILE* out, Token token, const char* filename)
 {
-    fprintf(out, "%s:%I64d:%I64d: ", filename, token.line, token.col);
+    fprintf(out, "%s:%I64d:%I64d:\t", filename, token.line, token.col);
     printToken(out, token);
 }
