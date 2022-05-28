@@ -2,6 +2,7 @@
 #define ERROR_TOKEN_INCLUDED
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "FileSpan.h"
 
@@ -32,6 +33,15 @@ typedef struct ErrorToken
  * @return ErrorToken 
  */
 ErrorToken createErrorToken(ErrorLevel level, FileSpan span, const char* message, const char* help);
+
+/**
+ * @brief prints this error token into the given stream
+ * 
+ * @param out stream to print to
+ * @param token token to print
+ * @param filename file in which this token is
+ */
+void printErrorToken(FILE* out, ErrorToken token, const char* filename);
 
 /**
  * @brief frees error token

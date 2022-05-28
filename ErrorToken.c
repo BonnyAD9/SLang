@@ -24,6 +24,37 @@ ErrorToken createErrorToken(ErrorLevel level, FileSpan span, const char* message
     return error;
 }
 
+void printErrorToken(FILE* out, ErrorToken token, const char* filename)
+{
+    const char* msgType;
+    const char* msgColor;
+    switch (token.level)
+    {
+    case INFO:
+        msgType = "info:";
+        msgColor = "\x1b[94m";
+        break;
+    case WARNING:
+        msgType = "warning:";
+        msgColor = "\x1b[95m";
+        break;
+    case ERROR:
+        msgType = "error:";
+        msgColor = "\x1b[91m";
+        break;
+    default:
+        msgType = "message:";
+        msgColor = "\x1b[93m";
+        break;
+    }
+
+    fprintf(out, "%s:%I64d:%I64d: %s%s\x1b[0m %s\n\t%s%s\x1b[0m\n\t\x1b[92mhelp:\x1b[0m %s",
+            filename, token.line, token.col,
+            msgColor, msgType, token.message,
+            msgColor, token.token,
+            token.help);
+}
+
 void freeErrorToken(ErrorToken error)
 {
     free(error.token);

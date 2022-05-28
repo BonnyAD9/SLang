@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 
-#include "TokenArray.h"
 #include "List.h"
 
 #ifndef LEXER_READ_BUFFER_SIZE
@@ -14,8 +13,9 @@
  * @brief tokenizes the given stream
  * 
  * @param in stream to read from
- * @return Tokenized result
+ * @param errors where to put error tokens
+ * @return List of tokens Tokenized result
  */
-TokenArray lex(FILE* in, List* errors);
+List lex(FILE* in, List* errors);
 
 #endif // LEXER_INCLUDED

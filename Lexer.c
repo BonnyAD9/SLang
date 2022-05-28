@@ -6,7 +6,6 @@
 #include <ctype.h>
 
 #include "Token.h"
-#include "TokenArray.h"
 #include "FileSpan.h"
 #include "List.h"
 #include "Assert.h"
@@ -33,16 +32,16 @@ List _tokenize(FILE* in);
  */
 size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size_t* line, size_t* col);
 
-TokenArray lex(FILE* in, List* errors)
+List lex(FILE* in, List* errors)
 {
     assert(in, "lex: parameter in was null");
     assert(errors, "lex: parameter errors was null");
 
     List errs = newList(ErrorToken);
     List list = _tokenize(in);
-    TokenArray arr = createTokenArray(list.length);
+    List tokens = newList(Token);
 
-    for (size_t i = 0; i < arr.length; i++)
+    for (size_t i = 0; i < list.length; i++)
     {
         FileSpan span = listGet(list, i, FileSpan);
         switch (span.str[0])
@@ -52,22 +51,22 @@ TokenArray lex(FILE* in, List* errors)
             freeFileSpan(span);
             continue;
         case '[':
-            arr.data[i] = fileSpanTokenPos(PUNCTUATION_BRACKET_OPEN, span);
+            listAdd(tokens, fileSpanTokenPos(PUNCTUATION_BRACKET_OPEN, span), Token);
             freeFileSpan(span);
             continue;
         case ']':
-            arr.data[i] = fileSpanTokenPos(PUNCTUATION_BRACKET_CLOSE, span);
+            listAdd(tokens, fileSpanTokenPos(PUNCTUATION_BRACKET_CLOSE, span), Token);
             freeFileSpan(span);
             continue;
         case '/':
             switch(span.str[1])
             {
             case '/':
-                arr.data[i] = fileSpanTokenPart(COMMENT_LINE, span, 2, span.length - 2);
+                listAdd(tokens, fileSpanTokenPart(COMMENT_LINE, span, 2, span.length - 2), Token);
                 freeFileSpan(span);
                 continue;
             case '*':
-                arr.data[i] = fileSpanTokenPart(COMMENT_BLOCK, span, 2, span.length < 5 ? 0 : span.length - 4);
+                listAdd(tokens, fileSpanTokenPart(COMMENT_BLOCK, span, 2, span.length < 5 ? 0 : span.length - 4), Token);
                 freeFileSpan(span);
                 continue;
             default:
@@ -80,13 +79,13 @@ TokenArray lex(FILE* in, List* errors)
                 listAdd(errs, createErrorToken(ERROR, span, "string literal is not closed", "try adding closing \""), ErrorToken);
                 continue;
             }
-            arr.data[i] = fileSpanTokenPart(LITERAL_STRING, span, 1, span.length - 2);
+            listAdd(tokens, fileSpanTokenPart(LITERAL_STRING, span, 1, span.length - 2), Token);
             freeFileSpan(span);
             continue;
         case '\'':
             if (span.length != 3)
             {
-                listAdd(errs, createErrorToken(ERROR, span, "char literal has invalid length", "char literal can only contain one character"), ErrorToken);
+                listAdd(errs, createErrorToken(ERROR, span, "char literal can only contain one character", "maybe you want to use string (\")"), ErrorToken);
                 continue;
             }
             else if (span.str[3] != '\'')
@@ -94,19 +93,19 @@ TokenArray lex(FILE* in, List* errors)
                 listAdd(errs, createErrorToken(ERROR, span, "char literal is not closed", "try adding closing '"), ErrorToken);
                 continue;
             }
-            arr.data[i] = fileSpanCharToken(LITERAL_CHAR, span.str[1], span);
+            listAdd(tokens, fileSpanCharToken(LITERAL_CHAR, span.str[1], span), Token);
             freeFileSpan(span);
             continue;
         case ';':
             if (span.length != 1)
                 break;
-            arr.data[i] = fileSpanTokenPos(OPERATOR_TRUST, span);
+            listAdd(tokens, fileSpanTokenPos(OPERATOR_TRUST, span), Token);
             freeFileSpan(span);
             continue;
         case '_':
             if (span.length != 1)
                 break;
-            arr.data[i] = fileSpanTokenPos(OPERATOR_NOTHING, span);
+            listAdd(tokens, fileSpanTokenPos(OPERATOR_NOTHING, span), Token);
             freeFileSpan(span);
             continue;
         default:
@@ -121,7 +120,7 @@ TokenArray lex(FILE* in, List* errors)
             switch (*c)
             {
             case 0:
-                arr.data[i] = fileSpanIntToken(LITERAL_INTEGER, num, span);
+                listAdd(tokens, fileSpanIntToken(LITERAL_INTEGER, num, span), Token);
                 freeFileSpan(span);
                 continue;
             case '.':
@@ -132,7 +131,7 @@ TokenArray lex(FILE* in, List* errors)
                     decimal += (*c - '0') / div;
                 if (*c)
                     break;
-                arr.data[i] = fileSpanDecToken(LITERAL_FLOAT, decimal, span);
+                listAdd(tokens, fileSpanDecToken(LITERAL_FLOAT, decimal, span), Token);
                 freeFileSpan(span);
                 continue;
             }
@@ -144,37 +143,37 @@ TokenArray lex(FILE* in, List* errors)
         }
         if (strcmp(span.str, "def") == 0)
         {
-            arr.data[i] = fileSpanTokenPos(KEYWORD_DEF, span);
+            listAdd(tokens, fileSpanTokenPos(KEYWORD_DEF, span), Token);
             freeFileSpan(span);
             continue;
         }
         if (strcmp(span.str, "struct") == 0)
         {
-            arr.data[i] = fileSpanTokenPos(KEYWORD_STRUCT, span);
+            listAdd(tokens, fileSpanTokenPos(KEYWORD_STRUCT, span), Token);
             freeFileSpan(span);
             continue;
         }
         if (strcmp(span.str, "set") == 0)
         {
-            arr.data[i] = fileSpanTokenPos(KEYWORD_SET, span);
+            listAdd(tokens, fileSpanTokenPos(KEYWORD_SET, span), Token);
             freeFileSpan(span);
             continue;
         }
-        if (i == 0)
+        if (list.length == 0)
         {
             listAdd(errs, createErrorToken(ERROR, span, "cannot use identifiers directly", "try ecapsulating it in []"), ErrorToken);
             continue;
         }
-        switch (arr.data[i - 1].type)
+        switch (listGet(tokens, list.length - 1, Token).type)
         {
         case PUNCTUATION_BRACKET_OPEN:
-            arr.data[i] = fileSpanToken(IDENTIFIER_FUNCTION, span);
+            listAdd(tokens, fileSpanToken(IDENTIFIER_FUNCTION, span), Token);
             continue;
         case KEYWORD_STRUCT:
-            arr.data[i] = fileSpanToken(IDENTIFIER_STRUCT, span);
+            listAdd(tokens, fileSpanToken(IDENTIFIER_STRUCT, span), Token);
             continue;
         default:
-            arr.data[i] = fileSpanToken(IDENTIFIER_VARIABLE, span);
+            listAdd(tokens, fileSpanToken(IDENTIFIER_VARIABLE, span), Token);
             continue;
         }
     }
@@ -183,7 +182,7 @@ TokenArray lex(FILE* in, List* errors)
         *errors = errs;
     else
         listDeepFree(list, ErrorToken, t, freeErrorToken(t));
-    return arr;
+    return tokens;
 }
 
 List _tokenize(FILE* in)
