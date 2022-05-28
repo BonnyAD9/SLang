@@ -21,6 +21,7 @@ typedef enum TokenType
     IDENTIFIER_VARIABLE, // i
     IDENTIFIER_FUNCTION, // +
     IDENTIFIER_STRUCT, // list
+    IDENTIFIER_PARAMETER, // value
     LITERAL_INTEGER, // 123
     LITERAL_FLOAT, // 123.0
     LITERAL_CHAR, // 'C'

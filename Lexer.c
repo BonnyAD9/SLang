@@ -56,10 +56,11 @@ long long _readInt(char* str, char** endptr, long long base, bool* overflow);
  * @param span span to check
  * @param tokens list of tokens for valid keyword
  * @param errors list of errors for invalid keyword
- * @return true keyword matched
- * @return false keyword not matched
+ * @return 0 keyword not matched
+ * @return 1 keyword matched successfully
+ * @return -1 keyword matced unsuccessfully
  */
-bool _checkKeyword(const char* kw, TokenType type, FileSpan span, List* tokens, List* errors);
+int _checkKeyword(const char* kw, TokenType type, FileSpan span, List* tokens, List* errors);
 
 /**
  * @brief converts the given char to numnerical digit
@@ -79,6 +80,10 @@ List lex(FILE* in, List* errors)
     List errs = newList(ErrorToken);
     List tokens = newList(Token);
 
+    long long nest = 0;
+    long long defd = -1;
+    long long parm = -1;
+
     for (size_t i = 0; i < list.length; i++)
     {
         // get tje string to examine
@@ -94,13 +99,25 @@ List lex(FILE* in, List* errors)
         // [ is always token by itself
         case '[':
             assert(span.length == 1, "lex: [ is not by itself in token '%s' at position :%I64d:%I64d", span.str, span.line, span.col);
-            listAdd(tokens, fileSpanTokenPos(PUNCTUATION_BRACKET_OPEN, span), Token);
+            listAdd(tokens, fileSpanIntToken(PUNCTUATION_BRACKET_OPEN, nest, span), Token);
             freeFileSpan(span);
+            nest++;
             continue;
         // ] is always token by itself
         case ']':
             assert(span.length == 1, "lex: ] is not by itself in token '%s' at position :%I64d:%I64d", span.str, span.line, span.col);
-            listAdd(tokens, fileSpanTokenPos(PUNCTUATION_BRACKET_CLOSE, span), Token);
+            if (nest == defd || nest == parm)
+            {
+                defd = -1;
+                parm = -1;
+            }
+            if (nest == 0)
+            {
+                listAdd(errs, createErrorToken(ERROR, span, "missing [ before ]", "add opening bracket somwhere before this closing one"), ErrorToken)
+                continue;
+            }
+            nest--;
+            listAdd(tokens, fileSpanIntToken(PUNCTUATION_BRACKET_CLOSE, nest, span), Token);
             freeFileSpan(span);
             continue;
         // check for comments (starts with // or /*)
@@ -109,7 +126,7 @@ List lex(FILE* in, List* errors)
             {
             // line comment
             case '/':
-                listAdd(tokens, fileSpanTokenPart(COMMENT_LINE, span, 2, span.length - 2), Token);
+                //listAdd(tokens, fileSpanTokenPart(COMMENT_LINE, span, 2, span.length - 2), Token);
                 freeFileSpan(span);
                 continue;
             // block comment
@@ -120,7 +137,7 @@ List lex(FILE* in, List* errors)
                     listAdd(errs, createErrorToken(ERROR, span, "block comment is not closed", "close it with */"), ErrorToken);
                     continue;
                 }
-                listAdd(tokens, fileSpanTokenPart(COMMENT_BLOCK, span, 2, span.length < 5 ? 0 : span.length - 4), Token);
+                //listAdd(tokens, fileSpanTokenPart(COMMENT_BLOCK, span, 2, span.length < 5 ? 0 : span.length - 4), Token);
                 freeFileSpan(span);
                 continue;
             default:
@@ -257,8 +274,8 @@ List lex(FILE* in, List* errors)
             continue;
         }
 
-        // if the list is empty, this is surely incorrect token
-        if (list.length == 0)
+        // tokens that are not enclosed in [] are incorrect
+        if (nest == 0)
         {
             listAdd(errs, createErrorToken(ERROR, span, "cannot use identifiers directly", "try ecapsulating it in []"), ErrorToken);
             continue;
@@ -266,14 +283,51 @@ List lex(FILE* in, List* errors)
 
 #define __checkKeyword(__kws, __kwe) if(_checkKeyword(__kws,__kwe,span,&tokens,&errs))continue
         // check for the keywords
-        __checkKeyword("def", KEYWORD_DEF);
         __checkKeyword("struct", KEYWORD_STRUCT);
         __checkKeyword("set", KEYWORD_SET);
-        __checkKeyword("defined", KEYWORD_DEFINED);
+        switch (_checkKeyword("defined", KEYWORD_DEFINED, span, &tokens, &errs))
+        {
+        case 0:
+            break;
+        case 1:
+            if (defd == -1 && parm == -1)
+                defd = nest;
+            continue;
+        default:
+            continue;
+        }
+        switch (_checkKeyword("def", KEYWORD_DEF, span, &tokens, &errs))
+        {
+        case 0:
+            break;
+        case 1:
+            if (defd == -1 && parm == -1)
+                parm = nest + 1;
+            continue;
+        default:
+            continue;
+        }
 #undef __checkKeyword
 
+        if (defd != -1)
+        {
+            listAdd(tokens, fileSpanToken(IDENTIFIER_STRUCT, span), Token);
+            continue;
+        }
+
+        if (parm != -1)
+        {
+            if (parm > nest && listGet(tokens, tokens.length - 1, Token).type == PUNCTUATION_BRACKET_OPEN)
+            {
+                listAdd(tokens, fileSpanToken(IDENTIFIER_STRUCT, span), Token);
+                continue;
+            }
+            listAdd(tokens, fileSpanToken(IDENTIFIER_PARAMETER, span), Token);
+            continue;
+        }
+
         // determine token type based on previous tokens
-        switch (listGet(tokens, list.length - 1, Token).type)
+        switch (listGet(tokens, tokens.length - 1, Token).type)
         {
         // tokens directly after [ are function identifiers
         case PUNCTUATION_BRACKET_OPEN:
@@ -289,6 +343,13 @@ List lex(FILE* in, List* errors)
             continue;
         }
     }
+
+    if (nest > 0)
+        listAdd(errs, createErrorToken(ERROR, copyFileSpanFrom("]", 1, 
+            listGet(list, list.length - 1, FileSpan).line, 
+            listGet(list, list.length - 1, FileSpan).col
+            ), "missing 1 or more closing brackets", "try adding ]"), ErrorToken);
+
     // free the list of strings
     freeList(list);
     // if errors is not null set them, otherwise free them
@@ -336,7 +397,7 @@ long long _readInt(char* str, char** endptr, long long base, bool* overflow)
     return num;
 }
 
-bool _checkKeyword(const char* kw, TokenType type, FileSpan span, List* tokens, List* errors)
+int _checkKeyword(const char* kw, TokenType type, FileSpan span, List* tokens, List* errors)
 {
     assert(kw, "_checkKeyword: parameter kw was null");
     assert(tokens, "_checkKeyword: parameter tokens was null");

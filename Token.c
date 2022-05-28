@@ -142,10 +142,10 @@ void printToken(FILE* out, Token token)
         fprintf(out, "blockComment(%s)", token.string);
         return;
     case PUNCTUATION_BRACKET_OPEN:
-        fprintf(out, "[");
+        fprintf(out, "[(%I64d)", token.integer);
         return;
     case PUNCTUATION_BRACKET_CLOSE:
-        fprintf(out, "]");
+        fprintf(out, "](%I64d)", token.integer);
         return;
     case IDENTIFIER_VARIABLE:
         fprintf(out, "variable(%s)", token.string);
@@ -155,6 +155,9 @@ void printToken(FILE* out, Token token)
         return;
     case IDENTIFIER_STRUCT:
         fprintf(out, "struct(%s)", token.string);
+        return;
+    case IDENTIFIER_PARAMETER:
+        fprintf(out, "parameter(%s)", token.string);
         return;
     case LITERAL_INTEGER:
         fprintf(out, "integer(%I64d)", token.integer);
