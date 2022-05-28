@@ -214,6 +214,7 @@ List lex(FILE* in, List* errors)
                     freeFileSpan(span);
                 continue;
             }
+            // reading hexadecimal numbers
             case 'x':
                 num = _readInt(c + 1, &c, 16, &overflow);
                 if (*c)
@@ -223,6 +224,7 @@ List lex(FILE* in, List* errors)
                     listAdd(errs, createErrorToken(WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorToken) // there shouldn't be ;
                         else freeFileSpan(span);
                 continue;
+            // reading binary numbers
             case 'b':
                 num = _readInt(c + 1, &c, 2, &overflow);
                 if (*c)
@@ -232,6 +234,7 @@ List lex(FILE* in, List* errors)
                     listAdd(errs, createErrorToken(WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorToken) // there shouldn't be ;
                         else freeFileSpan(span);
                 continue;
+            // reding numbers with the specified base
             case 'z':
                 if (num < 2 || num > 36)
                 {
@@ -315,19 +318,21 @@ long long _getDigit(char digit)
 long long _readInt(char* str, char** endptr, long long base, bool* overflow)
 {
     assert(str, "_readInt: parameter str was null");
-    assert(endptr, "_readInt: parameter endptr was null");
     assert(base <= 36 && base >= 2, "_readInt: parameter base was out of range (%I64d)", base);
-    assert(overflow, "_readInt: parameter overflow was null");
 
     long long num = 0;
     long long digit;
+    bool ovfl = false;
     for (; *str && (digit = _getDigit(*str)) < base; str++)
     {
         if (num > LONG_LONG_MAX / base || (num == LONG_LONG_MAX / base && digit > LONG_LONG_MAX % base))
-            *overflow = true;
+            ovfl = true;
         num = num * base + digit;
     }
-    *endptr = str;
+    if (endptr)
+        *endptr = str;
+    if (overflow)
+        *overflow = ovfl;
     return num;
 }
 
@@ -590,6 +595,29 @@ size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size
         case 't':
             buffer[pos] = '\t';
             continue;
+        case 'x':
+        {
+            char buf[3];
+            buf[2] = 0;
+            if ((chr = fgetc(in)) == EOF)
+            {
+                buffer[pos] = 'x';
+                return pos + 1;
+            }
+            buf[0] = chr;
+            if ((chr = fgetc(in)) == EOF)
+            {
+                buffer[pos] = 'x';
+                pos++;
+                if (pos >= bufferSize)
+                    except("_readQuote: quoted token is too long, max size is %I64d", bufferSize);
+                buffer[pos] = buf[0];
+                return pos + 1;
+            }
+            buf[1] = chr;
+            buffer[pos] = _readInt(buf, NULL, 16, NULL);
+            break;
+        }
         // any other character after \ will be readed literaly (\\, \")
         default:
             // keep track of position in file
