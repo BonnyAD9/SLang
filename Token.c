@@ -11,13 +11,14 @@ void freeToken(Token token)
 {
     switch (token.type)
     {
-    case COMMENT_LINE:
-    case COMMENT_BLOCK:
-    case IDENTIFIER_VARIABLE:
-    case IDENTIFIER_FUNCTION:
-    case IDENTIFIER_STRUCT:
-    case LITERAL_STRING:
-    case INVALID:
+    case T_COMMENT_LINE:
+    case T_COMMENT_BLOCK:
+    case T_IDENTIFIER_VARIABLE:
+    case T_IDENTIFIER_FUNCTION:
+    case T_IDENTIFIER_STRUCT:
+    case T_LITERAL_STRING:
+    case T_IDENTIFIER_PARAMETER:
+    case T_INVALID:
         free(token.string);
         return;
     default:
@@ -129,62 +130,65 @@ void printToken(FILE* out, Token token)
 {
     switch (token.type)
     {
-    case UNDEFINED:
+    case T_UNDEFINED:
         fprintf(out, "undefined");
         return;
-    case INVALID:
+    case T_INVALID:
         fprintf(out, "invalid(%s)", token.string);
         return;
-    case COMMENT_LINE:
+    case T_COMMENT_LINE:
         fprintf(out, "lineComment(%s)", token.string);
         return;
-    case COMMENT_BLOCK:
+    case T_COMMENT_BLOCK:
         fprintf(out, "blockComment(%s)", token.string);
         return;
-    case PUNCTUATION_BRACKET_OPEN:
+    case T_PUNCTUATION_BRACKET_OPEN:
         fprintf(out, "[(%I64d)", token.integer);
         return;
-    case PUNCTUATION_BRACKET_CLOSE:
+    case T_PUNCTUATION_BRACKET_CLOSE:
         fprintf(out, "](%I64d)", token.integer);
         return;
-    case IDENTIFIER_VARIABLE:
+    case T_IDENTIFIER_VARIABLE:
         fprintf(out, "variable(%s)", token.string);
         return;
-    case IDENTIFIER_FUNCTION:
+    case T_IDENTIFIER_FUNCTION:
         fprintf(out, "function(%s)", token.string);
         return;
-    case IDENTIFIER_STRUCT:
+    case T_IDENTIFIER_STRUCT:
         fprintf(out, "struct(%s)", token.string);
         return;
-    case IDENTIFIER_PARAMETER:
+    case T_IDENTIFIER_PARAMETER:
         fprintf(out, "parameter(%s)", token.string);
         return;
-    case LITERAL_INTEGER:
+    case T_LITERAL_INTEGER:
         fprintf(out, "integer(%I64d)", token.integer);
         return;
-    case LITERAL_FLOAT:
+    case T_LITERAL_FLOAT:
         fprintf(out, "float(%lf)", token.decimal);
         return;
-    case LITERAL_CHAR:
+    case T_LITERAL_CHAR:
         fprintf(out, "char(%c)", token.character);
         return;
-    case LITERAL_STRING:
+    case T_LITERAL_STRING:
         fprintf(out, "string(%s)", token.string);
         return;
-    case KEYWORD_DEF:
+    case T_KEYWORD_DEF:
         fprintf(out, "def");
         return;
-    case KEYWORD_STRUCT:
+    case T_KEYWORD_STRUCT:
         fprintf(out, "struct");
         return;
-    case KEYWORD_SET:
+    case T_KEYWORD_SET:
         fprintf(out, "set");
         return;
-    case KEYWORD_DEFINED:
+    case T_KEYWORD_DEFINED:
         fprintf(out, "defined");
         return;
-    case OPERATOR_NOTHING:
+    case T_OPERATOR_NOTHING:
         fprintf(out, "_");
+        return;
+    case T_ERROR:
+        fprintf(out, "error");
         return;
     default:
         fprintf(out, "unknown");
@@ -194,6 +198,6 @@ void printToken(FILE* out, Token token)
 
 void printTokenPos(FILE* out, Token token, const char* filename)
 {
-    fprintf(out, "%s:%I64d:%I64d:\t", filename, token.line, token.col);
+    fprintf(out, "%s:%I64d:%I64d: ", filename, token.line, token.col);
     printToken(out, token);
 }

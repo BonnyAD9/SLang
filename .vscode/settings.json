@@ -2,6 +2,7 @@
     "files.associations": {
         "*.html": "html",
         "lexer.h": "c",
-        "list.h": "c"
+        "list.h": "c",
+        "stdlib.h": "c"
     }
 }

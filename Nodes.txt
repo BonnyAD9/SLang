@@ -1,0 +1,36 @@
+FUNCTION_CALL: _
+    function name (IDENTIFIER | FUNCTION_CALL)
+    argumets (IDENTIFIER | LITERAL | NOTHING | FUNCTION_CALL | DEF | SET)
+    ...
+
+IDENTIFIER: Function_identifier | Variable_identifier | Parameter_identifier
+    _
+
+NOTHING: _
+    _
+
+ERROR: _
+    _
+
+VALUE_INTEGER: Literal_integer
+    _
+
+VALUE_FLOAT: Literal_float
+    _
+
+VALUE_CHAR: Literal_char
+    _
+
+VALUE_STRING: Literal_string
+    _
+
+FUNCTION_DEFINITION: _
+    parameters (IDENTIFIER | NOTHING)
+    ...
+    body (FUNCTION_CALL | IDENTIFIER | LITERAL | DEF | SET | NOTHING)
+
+VARIABLE_SETTER: Variable_identifier
+    value (FUNCTION_CALL | IDENTIFIER | LITERAL | DEF | NOTHING)
+
+FUNCTION_SETTER: Variable_identifier
+    value (SET)

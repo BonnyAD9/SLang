@@ -12,25 +12,26 @@
  */
 typedef enum TokenType
 {
-    UNDEFINED = 0,
-    INVALID,
-    COMMENT_LINE, // // hello
-    COMMENT_BLOCK, // /* hello */
-    PUNCTUATION_BRACKET_OPEN, // [
-    PUNCTUATION_BRACKET_CLOSE, // ]
-    IDENTIFIER_VARIABLE, // i
-    IDENTIFIER_FUNCTION, // +
-    IDENTIFIER_STRUCT, // list
-    IDENTIFIER_PARAMETER, // value
-    LITERAL_INTEGER, // 123
-    LITERAL_FLOAT, // 123.0
-    LITERAL_CHAR, // 'C'
-    LITERAL_STRING, // "hello"
-    KEYWORD_DEF, // def
-    KEYWORD_STRUCT, // struct
-    KEYWORD_SET, // set
-    KEYWORD_DEFINED, // defined
-    OPERATOR_NOTHING, // _
+    T_UNDEFINED = 0,
+    T_INVALID,
+    T_COMMENT_LINE, // // hello
+    T_COMMENT_BLOCK, // /* hello */
+    T_PUNCTUATION_BRACKET_OPEN, // [
+    T_PUNCTUATION_BRACKET_CLOSE, // ]
+    T_IDENTIFIER_VARIABLE, // i
+    T_IDENTIFIER_FUNCTION, // +
+    T_IDENTIFIER_STRUCT, // list
+    T_IDENTIFIER_PARAMETER, // value
+    T_LITERAL_INTEGER, // 123
+    T_LITERAL_FLOAT, // 123.0
+    T_LITERAL_CHAR, // 'C'
+    T_LITERAL_STRING, // "hello"
+    T_KEYWORD_DEF, // def
+    T_KEYWORD_STRUCT, // struct
+    T_KEYWORD_SET, // set
+    T_KEYWORD_DEFINED, // defined
+    T_OPERATOR_NOTHING, // _
+    T_ERROR,
 } TokenType;
 
 /**

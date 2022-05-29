@@ -1,5 +1,5 @@
-[defined factorial' [[int int] int]]
-[defined pi float]
+//[defined factorial' [[int int] int]]
+//[defined pi float]
 
 /**
  * @param num number to calculate factorial
@@ -16,8 +16,7 @@
     ]
 ]]
 
-[echo "\x1b[93mresult:\x1b[0m
-" [factorial 9223372036854775807]]
+[echo "\x1b[93mresult:\x1b[0m" [factorial 9223372036854775807]]
 
 [echo "-pi" -3.1415926535897932]
 [echo "numbers: " 0xFF 0b1001 36z10]

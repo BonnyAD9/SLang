@@ -1,6 +1,8 @@
 [defined factorial' [[int int] int]]
 [defined pi float]
 
+[struct comples [float real] [float imaginary]]
+
 /**
  * @param num number to calculate factorial
  * @returns result of the factorial
