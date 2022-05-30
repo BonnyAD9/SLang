@@ -169,6 +169,24 @@ void printToken(FILE* out, Token token)
     case T_IDENTIFIER_STRUCT:
         fprintf(out, "struct(%s)", token.string);
         return;
+    case T_STORAGE_POINTER:
+        fprintf(out, "*");
+        return;
+    case T_STORAGE_CHAR:
+        fprintf(out, "char");
+        return;
+    case T_STORAGE_STRING:
+        fprintf(out, "string");
+        return;
+    case T_STORAGE_INT:
+        fprintf(out, "int");
+        return;
+    case T_STORAGE_FLOAT:
+        fprintf(out, "float");
+        return;
+    case T_STORAGE_BOOL:
+        fprintf(out, "bool");
+        return;
     case T_IDENTIFIER_PARAMETER:
         fprintf(out, "parameter(%s)", token.string);
         return;
@@ -197,7 +215,7 @@ void printToken(FILE* out, Token token)
         fprintf(out, "set");
         return;
     case T_KEYWORD_SIGN:
-        fprintf(out, "defined");
+        fprintf(out, "sign");
         return;
     case T_OPERATOR_NOTHING:
         fprintf(out, "_");

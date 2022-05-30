@@ -21,6 +21,12 @@ typedef enum TokenType
     T_IDENTIFIER_VARIABLE, // i
     T_IDENTIFIER_FUNCTION, // +
     T_IDENTIFIER_STRUCT, // list
+    T_STORAGE_POINTER, // *
+    T_STORAGE_CHAR, // char
+    T_STORAGE_STRING, // string
+    T_STORAGE_INT, // int
+    T_STORAGE_FLOAT, // float
+    T_STORAGE_BOOL, // bool
     T_IDENTIFIER_PARAMETER, // value
     T_LITERAL_INTEGER, // 123
     T_LITERAL_FLOAT, // 123.0

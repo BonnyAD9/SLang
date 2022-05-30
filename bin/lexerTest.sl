@@ -3,7 +3,7 @@
 
 [struct complex [float real] [float imaginary]]
 
-[sign node [* next] [_ item]]
+[struct node [* next] [_ item]]
 
 /**
  * @param num number to calculate factorial

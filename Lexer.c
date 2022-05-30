@@ -83,6 +83,7 @@ List lex(FILE* in, List* errors)
     long long nest = 0;
     long long defd = -1;
     long long parm = -1;
+    long long strc = -1;
 
     for (size_t i = 0; i < list.length; i++)
     {
@@ -112,10 +113,11 @@ List lex(FILE* in, List* errors)
         // ] is always token by itself
         case ']':
             assert(span.length == 1, "lex: ] is not by itself in token '%s' at position :%I64d:%I64d", span.str, span.line, span.col);
-            if (nest == defd || nest == parm)
+            if (nest == defd || nest == parm || nest == strc)
             {
                 defd = -1;
                 parm = -1;
+                strc = -1;
             }
             if (nest == 0)
             {
@@ -289,14 +291,24 @@ List lex(FILE* in, List* errors)
 
 #define __checkKeyword(__kws, __kwe) if(_checkKeyword(__kws,__kwe,span,&tokens,&errs))continue
         // check for the keywords
-        __checkKeyword("struct", T_KEYWORD_STRUCT);
         __checkKeyword("set", T_KEYWORD_SET);
+        switch (_checkKeyword("struct", T_KEYWORD_STRUCT, span, &tokens, &errs))
+        {
+        case 0:
+            break;
+        case 1:
+            if (defd == -1 && parm == -1 && strc == -1)
+                strc = nest;
+            continue;
+        default:
+            continue;
+        }
         switch (_checkKeyword("sign", T_KEYWORD_SIGN, span, &tokens, &errs))
         {
         case 0:
             break;
         case 1:
-            if (defd == -1 && parm == -1)
+            if (defd == -1 && parm == -1 && strc == -1)
                 defd = nest;
             continue;
         default:
@@ -307,7 +319,7 @@ List lex(FILE* in, List* errors)
         case 0:
             break;
         case 1:
-            if (defd == -1 && parm == -1)
+            if (defd == -1 && parm == -1 && strc == -1)
                 parm = nest + 1;
             continue;
         default:
@@ -334,6 +346,14 @@ List lex(FILE* in, List* errors)
                 if (t->type == T_IDENTIFIER_STRUCT)
                     t->type = T_IDENTIFIER_VARIABLE;
             }
+#define __checkStorage(__str, __tpe) if(strcmp(span.str, __str) == 0){Token __t=fileSpanTokenPos(__tpe, span);listAddP(&tokens, &__t);continue;}
+            __checkStorage("*", T_STORAGE_POINTER);
+            __checkStorage("char", T_STORAGE_CHAR);
+            __checkStorage("string", T_STORAGE_STRING);
+            __checkStorage("int", T_STORAGE_INT);
+            __checkStorage("float", T_STORAGE_FLOAT);
+            __checkStorage("bool", T_STORAGE_BOOL);
+#undef __checkStorage
             listAdd(tokens, fileSpanToken(T_IDENTIFIER_STRUCT, span), Token);
             continue;
         }
@@ -349,16 +369,38 @@ List lex(FILE* in, List* errors)
             continue;
         }
 
+        if (strc != -1)
+        {
+            if (strc == nest)
+            {
+                listAdd(tokens, fileSpanToken(T_IDENTIFIER_STRUCT, span), Token);
+                continue;
+            }
+            switch (listGet(tokens, tokens.length - 1, Token).type)
+            {
+            case T_PUNCTUATION_BRACKET_OPEN:
+#define __checkStorage(__str, __tpe) if(strcmp(span.str, __str) == 0){Token __t=fileSpanTokenPos(__tpe, span);listAddP(&tokens, &__t);continue;}
+                __checkStorage("*", T_STORAGE_POINTER);
+                __checkStorage("char", T_STORAGE_CHAR);
+                __checkStorage("string", T_STORAGE_STRING);
+                __checkStorage("int", T_STORAGE_INT);
+                __checkStorage("float", T_STORAGE_FLOAT);
+                __checkStorage("bool", T_STORAGE_BOOL);
+#undef __checkStorage
+                listAdd(tokens, fileSpanToken(T_IDENTIFIER_STRUCT, span), Token);
+                continue;
+            default:
+                listAdd(tokens, fileSpanToken(T_IDENTIFIER_PARAMETER, span), Token);
+                continue;
+            }
+        }
+
         // determine token type based on previous tokens
         switch (listGet(tokens, tokens.length - 1, Token).type)
         {
         // tokens directly after [ are function identifiers
         case T_PUNCTUATION_BRACKET_OPEN:
             listAdd(tokens, fileSpanToken(T_IDENTIFIER_FUNCTION, span), Token);
-            continue;
-        // tokens after struct keyword are type identifiers
-        case T_KEYWORD_STRUCT:
-            listAdd(tokens, fileSpanToken(T_IDENTIFIER_STRUCT, span), Token);
             continue;
         // other tokens are just variable identifiers
         default:

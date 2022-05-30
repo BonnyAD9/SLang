@@ -12,7 +12,7 @@
 
 int main()
 {
-    const char* filename = "parserTest.sl";
+    const char* filename = "lexerTest.sl";
     FILE* f = fopen(filename, "r");
     List errs;
     List tokens = lex(f, &errs);
@@ -38,11 +38,11 @@ int main()
     );
     printf("#Errors: %I64d\n#Warnings: %I64d\n#Infos: %I64d\n", errors, warnings, infos);
     listDeepFree(errs, ErrorSpan, t, freeErrorSpan(t));
-    /*listForEach(tokens, Token, t,
+    listForEach(tokens, Token, t,
         printTokenPos(stdout, t, filename);
         printf("\n");
-    )*/
-
+    )
+/*
     ParserTree tree = parse(tokens, &errs);
 
     printf("#Errors: %I64d\n", errs.length);
@@ -50,7 +50,7 @@ int main()
 
     tree.filename = filename;
     printParserTree(stdout, tree);
-    freeParserTree(tree);
+    freeParserTree(tree);*/
 
     return EXIT_SUCCESS;
 }
