@@ -1,7 +1,9 @@
-[defined factorial' [[int int] int]]
-[defined pi float]
+[sign factorial' [[int int] int]]
+[sign pi float]
 
-[struct comples [float real] [float imaginary]]
+[struct complex [float real] [float imaginary]]
+
+[sign node [* next] [_ item]]
 
 /**
  * @param num number to calculate factorial

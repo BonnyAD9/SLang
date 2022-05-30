@@ -291,7 +291,7 @@ List lex(FILE* in, List* errors)
         // check for the keywords
         __checkKeyword("struct", T_KEYWORD_STRUCT);
         __checkKeyword("set", T_KEYWORD_SET);
-        switch (_checkKeyword("defined", T_KEYWORD_DEFINED, span, &tokens, &errs))
+        switch (_checkKeyword("sign", T_KEYWORD_SIGN, span, &tokens, &errs))
         {
         case 0:
             break;
@@ -314,6 +314,17 @@ List lex(FILE* in, List* errors)
             continue;
         }
 #undef __checkKeyword
+
+        if (strcmp(span.str, "true") == 0)
+        {
+            listAdd(tokens, fileSpanBoolToken(T_LITERAL_BOOL, true, span), Token);
+            continue;
+        }
+        if (strcmp(span.str, "false") == 0)
+        {
+            listAdd(tokens, fileSpanBoolToken(T_LITERAL_BOOL, false, span), Token);
+            continue;
+        }
 
         if (defd != -1)
         {

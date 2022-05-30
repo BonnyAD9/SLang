@@ -111,6 +111,18 @@ Token fileSpanCharToken(TokenType type, char value, FileSpan span)
     return characterToken(type, value, span.line, span.col);
 }
 
+Token fileSpanBoolToken(TokenType type, bool value, FileSpan span)
+{
+    Token t =
+    {
+        .type = type,
+        .line = span.line,
+        .col = span.col,
+        .boolean = value,
+    };
+    return t;
+}
+
 Token fileSpanTokenPart(TokenType type, FileSpan span, size_t start, size_t length)
 {
     assert(span.str, "fileSpanTokenPart: given span has no string");
@@ -172,6 +184,9 @@ void printToken(FILE* out, Token token)
     case T_LITERAL_STRING:
         fprintf(out, "string(%s)", token.string);
         return;
+    case T_LITERAL_BOOL:
+        fprintf(out, "bool(%s)", token.boolean ? "true" : "false");
+        return;
     case T_KEYWORD_DEF:
         fprintf(out, "def");
         return;
@@ -181,7 +196,7 @@ void printToken(FILE* out, Token token)
     case T_KEYWORD_SET:
         fprintf(out, "set");
         return;
-    case T_KEYWORD_DEFINED:
+    case T_KEYWORD_SIGN:
         fprintf(out, "defined");
         return;
     case T_OPERATOR_NOTHING:

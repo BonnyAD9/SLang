@@ -26,10 +26,11 @@ typedef enum TokenType
     T_LITERAL_FLOAT, // 123.0
     T_LITERAL_CHAR, // 'C'
     T_LITERAL_STRING, // "hello"
+    T_LITERAL_BOOL, // true false
     T_KEYWORD_DEF, // def
     T_KEYWORD_STRUCT, // struct
     T_KEYWORD_SET, // set
-    T_KEYWORD_DEFINED, // defined
+    T_KEYWORD_SIGN, // sign
     T_OPERATOR_NOTHING, // _
     T_ERROR,
 } TokenType;
@@ -49,6 +50,7 @@ typedef struct Token
         long long integer;
         double decimal;
         char character;
+        bool boolean;
     };
 } Token;
 
@@ -97,6 +99,16 @@ Token fileSpanTokenPart(TokenType type, FileSpan span, size_t start, size_t leng
  * @return Token new instance
  */
 Token fileSpanTokenPos(TokenType type, FileSpan span);
+
+/**
+ * @brief creates token with bool value
+ * 
+ * @param type type of the token
+ * @param value value of the token
+ * @param span span with position in file
+ * @return Token new instance
+ */
+Token fileSpanBoolToken(TokenType type, bool value, FileSpan span);
 
 /**
  * @brief creates token with int value

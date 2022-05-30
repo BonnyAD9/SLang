@@ -118,7 +118,8 @@ void freeErrorToken(ErrorToken error)
 char* _copyString(const char* str)
 {
     size_t len = strlen(str);
-    char *cpy = malloc((len + 1) * sizeof(char));
+    char* cpy = malloc((len + 1) * sizeof(char));
+    strcpy(cpy, str);
     assert(cpy, "_copyString: failed to allocate string of size %I64d", len + 1);
     return cpy;
 }

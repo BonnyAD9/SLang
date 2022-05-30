@@ -76,6 +76,11 @@ void _printParserNode(FILE *out, ParserNode node, size_t depth, const char* file
         printTokenPos(out, *node.token, filename);
         fprintf(out, ")\n");
         break;
+    case P_VALUE_BOOL:
+        fprintf(out, "VALUE_BOOL(");
+        printTokenPos(out, *node.token, filename);
+        fprintf(out, ")\n");
+        break;
     case P_FUNCTION_DEFINITION:
         fprintf(out, "FUNCTION_DEFINITION\n");
         break;

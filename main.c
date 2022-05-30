@@ -37,19 +37,20 @@ int main()
         }
     );
     printf("#Errors: %I64d\n#Warnings: %I64d\n#Infos: %I64d\n", errors, warnings, infos);
+    listDeepFree(errs, ErrorSpan, t, freeErrorSpan(t));
     /*listForEach(tokens, Token, t,
         printTokenPos(stdout, t, filename);
         printf("\n");
     )*/
-    listDeepFree(errs, ErrorSpan, t, freeErrorSpan(t));
 
     ParserTree tree = parse(tokens, &errs);
 
-    tree.filename = filename;
     printf("#Errors: %I64d\n", errs.length);
-    printParserTree(stdout, tree);
-
     listDeepFree(errs, ErrorToken, t, freeErrorToken(t));
-    listDeepFree(tokens, Token, t, freeToken(t));
+
+    tree.filename = filename;
+    printParserTree(stdout, tree);
+    freeParserTree(tree);
+
     return EXIT_SUCCESS;
 }

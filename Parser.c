@@ -128,7 +128,7 @@ ParserTree parse(List tokens, List* errors)
         case T_KEYWORD_SET:
             parserTreeAdd(&tree, _set(&tokens, &i, &errs));
             continue;
-        case T_KEYWORD_DEFINED:
+        case T_KEYWORD_SIGN:
             parserTreeAdd(&tree, _sign(&tokens, &i, &errs));
             continue;
         case T_OPERATOR_NOTHING:
@@ -404,6 +404,9 @@ int _value(List* tokens, size_t* i, List* errors, ParserNode* out)
         return 1;
     case T_LITERAL_STRING:
         *out = tokenParserNode(P_VALUE_STRING, t);
+        return 1;
+    case T_LITERAL_BOOL:
+        *out = tokenParserNode(P_VALUE_BOOL, t);
         return 1;
     case T_OPERATOR_NOTHING:
         *out = createParserNode(P_NOTHING);
