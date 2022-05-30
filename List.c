@@ -49,3 +49,34 @@ void* listGetP(List list, size_t index)
 {
     return &list.data[index * list.element];
 }
+
+ListIterator liCreate(List* list)
+{
+    ListIterator li =
+    {
+        .list = list,
+        .pos = 0,
+    };
+    return li;
+}
+
+void* liGetP(ListIterator* iterator)
+{
+    return listGetP(*iterator->list, iterator->pos);
+}
+
+bool liMove(ListIterator* iterator)
+{
+    iterator->pos++;
+    return iterator->pos < iterator->list->length;
+}
+
+bool liCan(ListIterator* iterator)
+{
+    return iterator->pos < iterator->list->length;
+}
+
+void liAddP(ListIterator* iterator, void* element)
+{
+    listAddP(iterator->list, element);
+}
