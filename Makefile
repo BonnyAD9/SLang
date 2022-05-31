@@ -1,9 +1,10 @@
 CC:=gcc
 NAME:=SLang
 FILE:=bin/$(NAME).exe
-CFLAGS:=-Wall -std=c17 -g -D_DEBUG -DASSERT_EXIT
-CFILES:=$(wildcard *.c)
-OBJS:=$(patsubst %.c, obj/%.o, $(CFILES))
+CFLAGS:=-Wall -std=c17 -g -lm
+DBGFLG:=-D_DEBUG -DASSERT_EXIT
+CFILES:=$(wildcard src/*.c)
+OBJS:=$(patsubst src/%.c, obj/%.o, $(CFILES))
 
 debug: $(OBJS)
 	$(CC) -lm $(OBJS) -o $(FILE)
@@ -12,7 +13,7 @@ release:
 	$(CC) $(CFLAGS) $(CFILES) -O3 -o bin/release/$(NAME).exe
 
 $(OBJS): $(CFILES)
-	$(CC) -lm -c $(CFLAGS) $(patsubst obj/%.o, %.c, $@) -o $@
+	$(CC) -c $(CFLAGS) $(DBGFLG) $(patsubst obj/%.o, src/%.c, $@) -o $@
 
 run: debug
 	./$(FILE)
