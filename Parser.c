@@ -1,6 +1,7 @@
 #include "Parser.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "ParserTree.h"
 #include "List.h"

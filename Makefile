@@ -6,13 +6,13 @@ CFILES:=$(wildcard *.c)
 OBJS:=$(patsubst %.c, obj/%.o, $(CFILES))
 
 debug: $(OBJS)
-	$(CC) $(OBJS) -o $(FILE)
+	$(CC) -lm $(OBJS) -o $(FILE)
 
 release:
 	$(CC) $(CFLAGS) $(CFILES) -O3 -o bin/release/$(NAME).exe
 
 $(OBJS): $(CFILES)
-	$(CC) -c $(CFLAGS) $(patsubst obj/%.o, %.c, $@) -o $@
+	$(CC) -lm -c $(CFLAGS) $(patsubst obj/%.o, %.c, $@) -o $@
 
 run: debug
 	./$(FILE)

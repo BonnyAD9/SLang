@@ -46,8 +46,8 @@
 #define liNext(__iterator, __type, __out, __ifnot) \
 {\
     if (liMove(__iterator))\
-        __out = *(__type*)listGetP(__iterator->list, __iterator->pos)\
-    else {__ifnot}\
+        __out = *(__type*)listGetP(*(__iterator)->list, (__iterator)->pos);\
+    else {__ifnot;}\
 }
 
 #define liGet(__iterator, __type) (*(__type*)liGetP(__iterator))

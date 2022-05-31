@@ -3,6 +3,7 @@
         "*.html": "html",
         "lexer.h": "c",
         "list.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "type_traits": "c"
     }
 }

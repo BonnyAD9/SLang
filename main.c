@@ -7,12 +7,14 @@
 #include "Errors.h"
 #include "ParserTree.h"
 #include "Parser.h"
+#include "String.h"
+#include "Evaluator.h"
 
 #define mac(__type) __type x
 
 int main()
 {
-    const char* filename = "lexerTest.sl";
+    const char* filename = "evaluatorTest.sl";
     FILE* f = fopen(filename, "r");
     List errs;
     List tokens = lex(f, &errs);
@@ -38,19 +40,24 @@ int main()
     );
     printf("#Errors: %I64d\n#Warnings: %I64d\n#Infos: %I64d\n", errors, warnings, infos);
     listDeepFree(errs, ErrorSpan, t, freeErrorSpan(t));
-    listForEach(tokens, Token, t,
+    /*listForEach(tokens, Token, t,
         printTokenPos(stdout, t, filename);
         printf("\n");
-    )
-/*
+    )*/
+
     ParserTree tree = parse(tokens, &errs);
+    freeList(tokens);
 
     printf("#Errors: %I64d\n", errs.length);
     listDeepFree(errs, ErrorToken, t, freeErrorToken(t));
 
     tree.filename = filename;
-    printParserTree(stdout, tree);
+    /*printParserTree(stdout, tree);
     freeParserTree(tree);*/
+
+    freeList(evaluate(tree));
+
+    freeParserTree(tree);
 
     return EXIT_SUCCESS;
 }

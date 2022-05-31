@@ -9,7 +9,7 @@ List createList(size_t elementSize)
 {
     List list =
     {
-        .data = malloc(STRING_LIST_START_SIZE * sizeof(FileSpan)),
+        .data = malloc(STRING_LIST_START_SIZE * elementSize),
         .allocated = STRING_LIST_START_SIZE,
         .length = 0,
         .element = elementSize
