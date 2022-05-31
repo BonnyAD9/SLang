@@ -8,9 +8,12 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "cwd": "${workspaceFolder}/bin",
+            "cwd": "${workspaceFolder}/testing",
             "program": "${workspaceFolder}/bin/SLang.exe",
-            "preLaunchTask": "MakeDebug"
+            "preLaunchTask": "MakeDebug",
+            "args": [
+                "evaluatorTest.sl"
+            ]
         }
     ]
 }
