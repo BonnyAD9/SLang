@@ -12,19 +12,34 @@
 
 #define mac(__type) __type x
 
-int main()
+int main(int argc, char** argv)
 {
-    const char* filename = "evaluatorTest.sl";
+    if (argc != 2)
+    {
+        printf("Error: invalid number of arguments");
+        return EXIT_FAILURE;
+    }
+
+    const char* filename = argv[1];
     FILE* f = fopen(filename, "r");
+    if (!f)
+    {
+        printf("Error: couldn't open file %s", filename);
+        return EXIT_FAILURE;
+    }
+
     List errs;
     List tokens = lex(f, &errs);
     fclose(f);
+
     size_t errors = 0;
     size_t warnings = 0;
     size_t infos = 0;
+    size_t msgs = 0;
     listForEach(errs, ErrorSpan, t,
         printErrorSpan(stdout, t, filename);
         printf("\n");
+        msgs++;
         switch (t.level)
         {
         case E_ERROR:
@@ -38,25 +53,41 @@ int main()
             break;
         }
     );
-    printf("#Errors: %I64d\n#Warnings: %I64d\n#Infos: %I64d\n", errors, warnings, infos);
+    if (errors != 0)
+    {
+        printf("#Errors: %I64d\n#Warnings: %I64d\n#Infos: %I64d\n", errors, warnings, infos);
+        return EXIT_FAILURE;
+    }
     listDeepFree(errs, ErrorSpan, t, freeErrorSpan(t));
-    /*listForEach(tokens, Token, t,
-        printTokenPos(stdout, t, filename);
-        printf("\n");
-    )*/
 
     ParserTree tree = parse(tokens, &errs);
     freeList(tokens);
+    tree.filename = filename;
 
-    printf("#Errors: %I64d\n", errs.length);
+    listForEach(errs, ErrorToken, t,
+        printErrorToken(stdout, t, filename);
+        printf("\n");
+        msgs++;
+        switch (t.level)
+        {
+        case E_ERROR:
+            errors++;
+            break;
+        case E_WARNING:
+            warnings++;
+            break;
+        case E_INFO:
+            infos++;
+            break;
+        }
+    );
+    if (msgs != 0)
+        printf("#Errors: %I64d\n#Warnings: %I64d\n#Infos: %I64d\n", errors, warnings, infos);
+    if (errors != 0)
+        return EXIT_FAILURE;
     listDeepFree(errs, ErrorToken, t, freeErrorToken(t));
 
-    tree.filename = filename;
-    /*printParserTree(stdout, tree);
-    freeParserTree(tree);*/
-
     freeList(evaluate(tree));
-
     freeParserTree(tree);
 
     return EXIT_SUCCESS;
