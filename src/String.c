@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include "Assert.h"
+#include "Terminal.h"
 
 String strEmpty()
 {
@@ -42,7 +43,7 @@ String strCLen(const char* str, size_t length)
 
     s.data[length] = 0;
 
-    assert(s.data, "strLiteral: failed to allocate string of length %I64d", length + 1);
+    assert(s.data, "strLiteral: failed to allocate string of length %"term_SIZE_T, length + 1);
 
     strcpy(s.data, str);
     return s;

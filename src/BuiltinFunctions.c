@@ -4,6 +4,7 @@
 
 #include "List.h"
 #include "Runtime.h"
+#include "Terminal.h"
 
 void registerBuiltins(Runtime* r)
 {
@@ -34,7 +35,7 @@ Variable print(Function f, Runtime* r, List par)
             printf(v.boolean ? "true" : "false");
             break;
         case V_INT:
-            printf("%I64d", v.integer);
+            printf("%"term_SIZE_T, v.integer);
             break;
         case V_FLOAT:
             printf("%lf", v.decimal);

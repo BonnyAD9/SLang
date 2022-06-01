@@ -4,6 +4,7 @@
 
 #include "FileSpan.h"
 #include "Assert.h"
+#include "Terminal.h"
 
 List createList(size_t elementSize)
 {
@@ -15,7 +16,7 @@ List createList(size_t elementSize)
         .element = elementSize
     };
 
-    assert(list.data, "createStringList: cannot allocate list data of size %I64d and element size %I64d", STRING_LIST_START_SIZE, elementSize);
+    assert(list.data, "createStringList: cannot allocate list data of size %"term_SIZE_T" and element size %"term_SIZE_T, STRING_LIST_START_SIZE, elementSize);
 
     return list;
 }
@@ -34,7 +35,7 @@ void listAddP(List* list, void* pItem)
     {
         size_t newSize = list->allocated < STRING_LIST_ALLOC_SIZE ? list->allocated * 2 : list->allocated + STRING_LIST_ALLOC_SIZE;
         unsigned char* newData = realloc(list->data, newSize * list->element);
-        assert(newData, "stringListAdd: cannot reallocate memory of size %I64d", newSize);
+        assert(newData, "stringListAdd: cannot reallocate memory of size %"term_SIZE_T, newSize);
         list->data = newData;
         list->allocated = newSize;
     }

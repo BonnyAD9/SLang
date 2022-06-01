@@ -7,6 +7,7 @@
 #include "Token.h"
 #include "Assert.h"
 #include "List.h"
+#include "Terminal.h"
 
 /**
  * @brief prints the given parser node
@@ -38,7 +39,7 @@ void printParserTree(FILE *out, ParserTree tree)
 void _printParserNode(FILE *out, ParserNode node, size_t depth, const char* filename)
 {
     for (size_t i = 0; i < depth; i++)
-        fprintf(out, "\x1b[9%I64dm|", i % 8 + 1);
+        fprintf(out, "\x1b[9"term_SIZE_T"m|", i % 8 + 1);
 
     switch (node.type)
     {

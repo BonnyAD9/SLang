@@ -10,7 +10,7 @@
  * @brief represents type of token
  * 
  */
-typedef enum TokenType
+typedef enum T_TokenType
 {
     T_UNDEFINED = 0,
     T_INVALID,
@@ -39,7 +39,7 @@ typedef enum TokenType
     T_KEYWORD_SIGN, // sign
     T_OPERATOR_NOTHING, // _
     T_ERROR,
-} TokenType;
+} T_TokenType;
 
 /**
  * @brief Represents lexical token
@@ -47,7 +47,7 @@ typedef enum TokenType
  */
 typedef struct Token
 {
-    TokenType type;
+    T_TokenType type;
     size_t line;
     size_t col;
     union
@@ -84,7 +84,7 @@ void printTokenPos(FILE* out, Token token, const char* filename);
  * @param span span with the string and position in file
  * @return Token new instance
  */
-Token fileSpanToken(TokenType type, FileSpan span);
+Token fileSpanToken(T_TokenType type, FileSpan span);
 
 /**
  * @brief creates token from file span with only part of the string
@@ -95,7 +95,7 @@ Token fileSpanToken(TokenType type, FileSpan span);
  * @param length total number of characters to take
  * @return Token bew instance
  */
-Token fileSpanTokenPart(TokenType type, FileSpan span, size_t start, size_t length);
+Token fileSpanTokenPart(T_TokenType type, FileSpan span, size_t start, size_t length);
 
 /**
  * @brief creates token from file span
@@ -104,7 +104,7 @@ Token fileSpanTokenPart(TokenType type, FileSpan span, size_t start, size_t leng
  * @param span span with the position in file
  * @return Token new instance
  */
-Token fileSpanTokenPos(TokenType type, FileSpan span);
+Token fileSpanTokenPos(T_TokenType type, FileSpan span);
 
 /**
  * @brief creates token with bool value
@@ -114,7 +114,7 @@ Token fileSpanTokenPos(TokenType type, FileSpan span);
  * @param span span with position in file
  * @return Token new instance
  */
-Token fileSpanBoolToken(TokenType type, bool value, FileSpan span);
+Token fileSpanBoolToken(T_TokenType type, bool value, FileSpan span);
 
 /**
  * @brief creates token with int value
@@ -124,7 +124,7 @@ Token fileSpanBoolToken(TokenType type, bool value, FileSpan span);
  * @param span span with the position in file
  * @return Token 
  */
-Token fileSpanIntToken(TokenType type, long long value, FileSpan span);
+Token fileSpanIntToken(T_TokenType type, long long value, FileSpan span);
 
 /**
  * @brief creates token with decimal value
@@ -134,7 +134,7 @@ Token fileSpanIntToken(TokenType type, long long value, FileSpan span);
  * @param span span with the position in file
  * @return Token 
  */
-Token fileSpanDecToken(TokenType type, double value, FileSpan span);
+Token fileSpanDecToken(T_TokenType type, double value, FileSpan span);
 
 /**
  * @brief creates token with char value
@@ -144,7 +144,7 @@ Token fileSpanDecToken(TokenType type, double value, FileSpan span);
  * @param span span with the position in file
  * @return Token 
  */
-Token fileSpanCharToken(TokenType type, char value, FileSpan span);
+Token fileSpanCharToken(T_TokenType type, char value, FileSpan span);
 
 /**
  * @brief Create a Token object with no data
@@ -154,7 +154,7 @@ Token fileSpanCharToken(TokenType type, char value, FileSpan span);
  * @param col collumn of the first character of the token
  * @return new Token
  */
-Token createToken(TokenType type, size_t line, size_t col);
+Token createToken(T_TokenType type, size_t line, size_t col);
 
 /**
  * @brief Create a Token object with string data
@@ -165,7 +165,7 @@ Token createToken(TokenType type, size_t line, size_t col);
  * @param col collumn of the first character of the token
  * @return new Token
  */
-Token stringToken(TokenType type, char* string, size_t line, size_t col);
+Token stringToken(T_TokenType type, char* string, size_t line, size_t col);
 
 /**
  * @brief Create a Token object with integer data
@@ -176,7 +176,7 @@ Token stringToken(TokenType type, char* string, size_t line, size_t col);
  * @param col collumn of the first character of the token
  * @return new Token
  */
-Token integerToken(TokenType type, long long integer, size_t line, size_t col);
+Token integerToken(T_TokenType type, long long integer, size_t line, size_t col);
 
 /**
  * @brief Create a Token object with decimal data
@@ -187,7 +187,7 @@ Token integerToken(TokenType type, long long integer, size_t line, size_t col);
  * @param col collumn of the first character of the token
  * @return new Token
  */
-Token decimalToken(TokenType type, double decimal, size_t line, size_t col);
+Token decimalToken(T_TokenType type, double decimal, size_t line, size_t col);
 
 /**
  * @brief Create a Token object with character data
@@ -198,7 +198,7 @@ Token decimalToken(TokenType type, double decimal, size_t line, size_t col);
  * @param col collumn of the first character of the token
  * @return new Token
  */
-Token characterToken(TokenType type, char character, size_t line, size_t col);
+Token characterToken(T_TokenType type, char character, size_t line, size_t col);
 
 /**
  * @brief frees this token string (if it is that type)

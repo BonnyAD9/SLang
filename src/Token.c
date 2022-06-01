@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "Assert.h"
+#include "Terminal.h"
 
 void freeToken(Token token)
 {
@@ -26,12 +27,12 @@ void freeToken(Token token)
     }
 }
 
-Token fileSpanToken(TokenType type, FileSpan span)
+Token fileSpanToken(T_TokenType type, FileSpan span)
 {
     return stringToken(type, span.str, span.line, span.col);
 }
 
-Token createToken(TokenType type, size_t line, size_t col)
+Token createToken(T_TokenType type, size_t line, size_t col)
 {
     Token t =
     {
@@ -43,7 +44,7 @@ Token createToken(TokenType type, size_t line, size_t col)
     return t;
 }
 
-Token stringToken(TokenType type, char *string, size_t line, size_t col)
+Token stringToken(T_TokenType type, char *string, size_t line, size_t col)
 {
     Token t =
     {
@@ -55,7 +56,7 @@ Token stringToken(TokenType type, char *string, size_t line, size_t col)
     return t;
 }
 
-Token integerToken(TokenType type, long long integer, size_t line, size_t col)
+Token integerToken(T_TokenType type, long long integer, size_t line, size_t col)
 {
     Token t =
     {
@@ -67,7 +68,7 @@ Token integerToken(TokenType type, long long integer, size_t line, size_t col)
     return t;
 }
 
-Token decimalToken(TokenType type, double decimal, size_t line, size_t col)
+Token decimalToken(T_TokenType type, double decimal, size_t line, size_t col)
 {
     Token t =
     {
@@ -79,7 +80,7 @@ Token decimalToken(TokenType type, double decimal, size_t line, size_t col)
     return t;
 }
 
-Token characterToken(TokenType type, char character, size_t line, size_t col)
+Token characterToken(T_TokenType type, char character, size_t line, size_t col)
 {
     Token t =
     {
@@ -91,27 +92,27 @@ Token characterToken(TokenType type, char character, size_t line, size_t col)
     return t;
 }
 
-Token fileSpanTokenPos(TokenType type, FileSpan span)
+Token fileSpanTokenPos(T_TokenType type, FileSpan span)
 {
     return createToken(type, span.line, span.col);
 }
 
-Token fileSpanIntToken(TokenType type, long long value, FileSpan span)
+Token fileSpanIntToken(T_TokenType type, long long value, FileSpan span)
 {
     return integerToken(type, value, span.line, span.col);
 }
 
-Token fileSpanDecToken(TokenType type, double value, FileSpan span)
+Token fileSpanDecToken(T_TokenType type, double value, FileSpan span)
 {
     return decimalToken(type, value, span.line, span.col);
 }
 
-Token fileSpanCharToken(TokenType type, char value, FileSpan span)
+Token fileSpanCharToken(T_TokenType type, char value, FileSpan span)
 {
     return characterToken(type, value, span.line, span.col);
 }
 
-Token fileSpanBoolToken(TokenType type, bool value, FileSpan span)
+Token fileSpanBoolToken(T_TokenType type, bool value, FileSpan span)
 {
     Token t =
     {
@@ -123,14 +124,14 @@ Token fileSpanBoolToken(TokenType type, bool value, FileSpan span)
     return t;
 }
 
-Token fileSpanTokenPart(TokenType type, FileSpan span, size_t start, size_t length)
+Token fileSpanTokenPart(T_TokenType type, FileSpan span, size_t start, size_t length)
 {
     assert(span.str, "fileSpanTokenPart: given span has no string");
-    assert(start + length <= span.length, "fileSpanTokenPart: geven span of the span is outside of range (max: %I64d, is: %I64d)", span.length, start + length);
+    assert(start + length <= span.length, "fileSpanTokenPart: geven span of the span is outside of range (max: %"term_SIZE_T", is: %"term_SIZE_T")", span.length, start + length);
 
     char* str = malloc((length + 1) * sizeof(char));
     
-    assert(str, "fileSpanTokenPart: failed to allocate string of size %I64d", length + 1);
+    assert(str, "fileSpanTokenPart: failed to allocate string of size %"term_SIZE_T, length + 1);
     
     str[length] = 0;
     strncpy(str, span.str + start, length);
@@ -155,10 +156,10 @@ void printToken(FILE* out, Token token)
         fprintf(out, "blockComment(%s)", token.string);
         return;
     case T_PUNCTUATION_BRACKET_OPEN:
-        fprintf(out, "[(%I64d)", token.integer);
+        fprintf(out, "[(%"term_SIZE_T")", token.integer);
         return;
     case T_PUNCTUATION_BRACKET_CLOSE:
-        fprintf(out, "](%I64d)", token.integer);
+        fprintf(out, "](%"term_SIZE_T")", token.integer);
         return;
     case T_IDENTIFIER_VARIABLE:
         fprintf(out, "variable(%s)", token.string);
@@ -191,7 +192,7 @@ void printToken(FILE* out, Token token)
         fprintf(out, "parameter(%s)", token.string);
         return;
     case T_LITERAL_INTEGER:
-        fprintf(out, "integer(%I64d)", token.integer);
+        fprintf(out, "integer(%"term_SIZE_T")", token.integer);
         return;
     case T_LITERAL_FLOAT:
         fprintf(out, "float(%lf)", token.decimal);
@@ -231,6 +232,6 @@ void printToken(FILE* out, Token token)
 
 void printTokenPos(FILE* out, Token token, const char* filename)
 {
-    fprintf(out, "%s:%I64d:%I64d: ", filename, token.line, token.col);
+    fprintf(out, "%s:%"term_SIZE_T":%"term_SIZE_T": ", filename, token.line, token.col);
     printToken(out, token);
 }

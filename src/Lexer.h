@@ -6,7 +6,7 @@
 #include "List.h"
 
 #ifndef LEXER_READ_BUFFER_SIZE
-#define LEXER_READ_BUFFER_SIZE 1024
+#define LEXER_READ_BUFFER_SIZE 1024LL
 #endif // LEXER_READ_BUFFER_SIZE
 
 #ifndef LONG_LONG_MAX

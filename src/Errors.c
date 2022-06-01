@@ -5,6 +5,7 @@
 #include "FileSpan.h"
 #include "Assert.h"
 #include "Token.h"
+#include "Terminal.h"
 
 /**
  * @brief creates copy of the given string
@@ -34,23 +35,23 @@ void printErrorSpan(FILE* out, ErrorSpan token, const char* filename)
     {
     case E_INFO:
         msgType = "info:";
-        msgColor = "\x1b[94m";
+        msgColor = term_BCYAN;
         break;
     case E_WARNING:
         msgType = "warning:";
-        msgColor = "\x1b[95m";
+        msgColor = term_BMAGENTA;
         break;
     case E_ERROR:
         msgType = "error:";
-        msgColor = "\x1b[91m";
+        msgColor = term_BRED;
         break;
     default:
         msgType = "message:";
-        msgColor = "\x1b[93m";
+        msgColor = term_BYELLOW;
         break;
     }
 
-    fprintf(out, "%s:%I64d:%I64d:\t%s%s\x1b[0m %s\n\t%s%s\x1b[0m\n\t\x1b[92mhelp:\x1b[0m %s",
+    fprintf(out, "%s:%"term_SIZE_T":%"term_SIZE_T":\t%s%s"term_COLRESET" %s\n\t%s%s"term_COLRESET"\n\t\x1b"term_BGREEN"help:\x1b[0m %s",
             filename, token.span.line, token.span.col,
             msgColor, msgType, token.message,
             msgColor, token.span.str,
@@ -84,28 +85,28 @@ void printErrorToken(FILE* out, ErrorToken error, const char* filename)
     {
     case E_INFO:
         msgType = "info:";
-        msgColor = "\x1b[94m";
+        msgColor = term_BCYAN;
         break;
     case E_WARNING:
         msgType = "warning:";
-        msgColor = "\x1b[95m";
+        msgColor = term_BMAGENTA;
         break;
     case E_ERROR:
         msgType = "error:";
-        msgColor = "\x1b[91m";
+        msgColor = term_BRED;
         break;
     default:
         msgType = "message:";
-        msgColor = "\x1b[93m";
+        msgColor = term_BYELLOW;
         break;
     }
 
-    fprintf(out, "%s:%I64d:%I64d:\t%s%s\x1b[0m %s\n\t%s",
+    fprintf(out, "%s:%"term_SIZE_T":%"term_SIZE_T":\t%s%s"term_COLRESET" %s\n\t%s",
             filename, error.token.line, error.token.col,
             msgColor, msgType, error.message,
             msgColor);
     printToken(out, error.token);
-    fprintf(out, "\x1b[0m\n\t\x1b[92mhelp: \x1b[0m %s", error.help);
+    fprintf(out, term_COLRESET"\n\t"term_BGREEN"help: "term_COLRESET" %s", error.help);
 }
 
 void freeErrorToken(ErrorToken error)
@@ -120,6 +121,6 @@ char* _copyString(const char* str)
     size_t len = strlen(str);
     char* cpy = malloc((len + 1) * sizeof(char));
     strcpy(cpy, str);
-    assert(cpy, "_copyString: failed to allocate string of size %I64d", len + 1);
+    assert(cpy, "_copyString: failed to allocate string of size %"term_SIZE_T, len + 1);
     return cpy;
 }
