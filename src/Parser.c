@@ -2,11 +2,12 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "ParserTree.h"
 #include "List.h"
 #include "Errors.h"
-#include "Assert.h"
+#include "DebugTools.h"
 
 #define _nextToken(__list, __i, __name, __ifnot) if(__i+1<__list.length)__name=*(Token*)listGetP(__list, ++__i);else{__ifnot;}
 #define _nextTokenP(__list, __i, __name, __ifnot) if(*__i+1<__list->length)__name=*(Token*)listGetP(*__list, ++*__i);else{__ifnot;}

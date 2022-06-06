@@ -1,10 +1,9 @@
 #include "List.h"
 
 #include <stdlib.h>
+#include <assert.h>
 
 #include "FileSpan.h"
-#include "Assert.h"
-#include "Terminal.h"
 
 List createList(size_t elementSize)
 {
@@ -16,26 +15,26 @@ List createList(size_t elementSize)
         .element = elementSize
     };
 
-    assert(list.data, "createStringList: cannot allocate list data of size %"term_SIZE_T" and element size %"term_SIZE_T, STRING_LIST_START_SIZE, elementSize);
+    assert(list.data);
 
     return list;
 }
 
 void freeList(List list)
 {
-    assert(list.data, "freeStringList: list has null as data");
+    assert(list.data);
     free(list.data);
 }
 
 void listAddP(List* list, void* pItem)
 {
-    assert(pItem, "fileSpanListAdd: parameter pItem was null");
+    assert(pItem);
     unsigned char* item = (unsigned char*)pItem;
     if (list->allocated == list->length)
     {
         size_t newSize = list->allocated < STRING_LIST_ALLOC_SIZE ? list->allocated * 2 : list->allocated + STRING_LIST_ALLOC_SIZE;
         unsigned char* newData = realloc(list->data, newSize * list->element);
-        assert(newData, "stringListAdd: cannot reallocate memory of size %"term_SIZE_T, newSize);
+        assert(newData);
         list->data = newData;
         list->allocated = newSize;
     }

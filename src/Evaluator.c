@@ -1,10 +1,12 @@
 #include "Evaluator.h"
 
+#include <assert.h>
+
 #include "ParserTree.h"
 #include "List.h"
 #include "Runtime.h"
+#include "DebugTools.h"
 #include "BuiltinFunctions.h"
-#include "Assert.h"
 
 /**
  * @brief executes function call
@@ -77,7 +79,7 @@ List evaluate(ParserTree tree)
 
 Variable _call(ParserNode node, Runtime* r)
 {
-    assert(node.nodes.length > 0, "_call: n.nodes.length was 0");
+    assert(node.nodes.length > 0);
 
     ListIterator li = liCreate(&node.nodes);
     ParserNode n = liGet(&li, ParserNode);

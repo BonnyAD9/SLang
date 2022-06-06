@@ -1,7 +1,7 @@
 #include "Runtime.h"
 
 #include "List.h"
-#include "Assert.h"
+#include "DebugTools.h"
 
 Runtime createRuntime(List *errors)
 {

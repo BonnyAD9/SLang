@@ -9,9 +9,9 @@
 #define LEXER_READ_BUFFER_SIZE 1024LL
 #endif // LEXER_READ_BUFFER_SIZE
 
-#ifndef LONG_LONG_MAX
-#define LONG_LONG_MAX 9223372036854775807LL
-#endif // LONG_LONG_MAX
+#ifndef DECIMAL_WARNING_LIMIT
+#define DECIMAL_WARNING_LIMIT 17
+#endif // DECIMAL_WARNING_LIMIT
 
 /**
  * @brief tokenizes the given stream

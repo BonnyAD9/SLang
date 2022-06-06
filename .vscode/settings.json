@@ -4,6 +4,8 @@
         "lexer.h": "c",
         "list.h": "c",
         "stdlib.h": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "assert.h": "c",
+        "stdint.h": "c"
     }
 }

@@ -3,9 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
-#include "Assert.h"
-#include "Terminal.h"
+#include <assert.h>
 
 String strEmpty()
 {
@@ -41,7 +39,7 @@ String strCLen(const char* str, size_t length)
         .data = malloc((length + 1) * sizeof(char)),
     };
 
-    assert(s.data, "strLiteral: failed to allocate string of length %"term_SIZE_T, length + 1);
+    assert(s.data);
 
     s.data[length] = 0;
 

@@ -10,7 +10,7 @@ debug: $(OBJS)
 	$(CC) $(OBJS) -o $(FILE)
 
 release:
-	$(CC) $(CFLAGS) $(CFILES) -O3 -o bin/release/$(NAME).exe
+	$(CC) $(CFLAGS) -DNDEBUG $(CFILES) -O3 -o bin/release/$(NAME).exe
 
 $(OBJS): $(CFILES)
 	$(CC) -c $(CFLAGS) $(DBGFLG) $(patsubst obj/%.o, src/%.c, $@) -o $@

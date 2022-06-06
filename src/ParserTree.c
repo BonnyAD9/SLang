@@ -3,11 +3,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "Token.h"
-#include "Assert.h"
 #include "List.h"
-#include "Terminal.h"
 
 /**
  * @brief prints the given parser node
@@ -119,7 +118,7 @@ ParserNode tokenParserNode(ParserNodeType type, Token token)
         .type = type,
         .token = malloc(sizeof(Token))
     };
-    assert(node.token, "tokenParserNode: failed to allocate token");
+    assert(node.token);
     *node.token = token;
     return node;
 }

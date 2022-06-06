@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-
-#include "Assert.h"
-#include "Terminal.h"
+#include <assert.h>
 
 void freeToken(Token token)
 {
@@ -126,12 +124,12 @@ Token fileSpanBoolToken(T_TokenType type, bool value, FileSpan span)
 
 Token fileSpanTokenPart(T_TokenType type, FileSpan span, size_t start, size_t length)
 {
-    assert(span.str, "fileSpanTokenPart: given span has no string");
-    assert(start + length <= span.length, "fileSpanTokenPart: geven span of the span is outside of range (max: %"term_SIZE_T", is: %"term_SIZE_T")", span.length, start + length);
+    assert(span.str);
+    assert(start + length <= span.length);
 
     char* str = malloc((length + 1) * sizeof(char));
     
-    assert(str, "fileSpanTokenPart: failed to allocate string of size %"term_SIZE_T, length + 1);
+    assert(str);
     
     str[length] = 0;
     strncpy_s(str, length + 1, span.str + start, length);
@@ -156,10 +154,10 @@ void printToken(FILE* out, Token token)
         fprintf(out, "blockComment(%s)", token.string);
         return;
     case T_PUNCTUATION_BRACKET_OPEN:
-        fprintf(out, "[(%"term_SIZE_T")", token.integer);
+        fprintf(out, "[(%zu)", token.integer);
         return;
     case T_PUNCTUATION_BRACKET_CLOSE:
-        fprintf(out, "](%"term_SIZE_T")", token.integer);
+        fprintf(out, "](%zu)", token.integer);
         return;
     case T_IDENTIFIER_VARIABLE:
         fprintf(out, "variable(%s)", token.string);
@@ -192,7 +190,7 @@ void printToken(FILE* out, Token token)
         fprintf(out, "parameter(%s)", token.string);
         return;
     case T_LITERAL_INTEGER:
-        fprintf(out, "integer(%"term_SIZE_T")", token.integer);
+        fprintf(out, "integer(%zu)", token.integer);
         return;
     case T_LITERAL_FLOAT:
         fprintf(out, "float(%lf)", token.decimal);
@@ -232,6 +230,6 @@ void printToken(FILE* out, Token token)
 
 void printTokenPos(FILE* out, Token token, const char* filename)
 {
-    fprintf(out, "%s:%"term_SIZE_T":%"term_SIZE_T": ", filename, token.line, token.col);
+    fprintf(out, "%s:%zu:%zu: ", filename, token.line, token.col);
     printToken(out, token);
 }

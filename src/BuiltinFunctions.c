@@ -1,10 +1,10 @@
 #include "BuiltinFunctions.h"
 
 #include <stdio.h>
+#include <assert.h>
 
 #include "List.h"
 #include "Runtime.h"
-#include "Terminal.h"
 
 void registerBuiltins(Runtime* r)
 {
@@ -14,6 +14,7 @@ void registerBuiltins(Runtime* r)
 
 Variable println(Function f, Runtime* r, List par)
 {
+    assert(r);
     Variable ret = print(f, r, par);
     printf("\n");
     return ret;
@@ -35,7 +36,7 @@ Variable print(Function f, Runtime* r, List par)
             printf(v.boolean ? "true" : "false");
             break;
         case V_INT:
-            printf("%"term_SIZE_T, v.integer);
+            printf("%zu", v.integer);
             break;
         case V_FLOAT:
             printf("%lf", v.decimal);

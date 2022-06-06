@@ -10,7 +10,6 @@
 #include "Parser.h"
 #include "String.h"
 #include "Evaluator.h"
-#include "Terminal.h"
 
 #define mac(__type) __type x
 
@@ -56,7 +55,7 @@ int main(int argc, char** argv)
     );
     if (errors != 0)
     {
-        printf("#Errors: %"term_SIZE_T"\n#Warnings: %"term_SIZE_T"\n#Infos: %"term_SIZE_T"\n", errors, warnings, infos);
+        printf("#Errors: %zu\n#Warnings: %zu\n#Infos: %zu\n", errors, warnings, infos);
         return EXIT_FAILURE;
     }
     listDeepFree(errs, ErrorSpan, t, freeErrorSpan(t));
@@ -83,7 +82,7 @@ int main(int argc, char** argv)
         }
     );
     if (msgs != 0)
-        printf("#Errors: %"term_SIZE_T"\n#Warnings: %"term_SIZE_T"\n#Infos: %"term_SIZE_T"\n", errors, warnings, infos);
+        printf("#Errors: %zu\n#Warnings: %zu\n#Infos: %zu\n", errors, warnings, infos);
     if (errors != 0)
         return EXIT_FAILURE;
     listDeepFree(errs, ErrorToken, t, freeErrorToken(t));

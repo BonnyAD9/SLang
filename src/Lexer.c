@@ -5,17 +5,14 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include <assert.h>
+#include <limits.h>
 
 #include "Token.h"
 #include "FileSpan.h"
 #include "List.h"
-#include "Assert.h"
 #include "Errors.h"
-#include "Terminal.h"
-
-#ifndef DECIMAL_WARNING_LIMIT
-#define DECIMAL_WARNING_LIMIT 17
-#endif // DECIMAL_WARNING_LIMIT
+#include "DebugTools.h"
 
 /**
  * @brief splits the file contents into FileSpans
@@ -73,8 +70,8 @@ long long _getDigit(char digit);
 
 List lex(FILE* in, List* errors)
 {
-    assert(in, "lex: parameter in was null");
-    assert(errors, "lex: parameter errors was null");
+    assert(in);
+    assert(errors);
 
     // read from file and prepare output lists
     List list = _tokenize(in);
@@ -95,12 +92,12 @@ List lex(FILE* in, List* errors)
         {
         // this case should never happen
         case 0:
-            dprintf("lex: empty token at position :%"term_SIZE_T":%"term_SIZE_T, span.line, span.col);
+            dprintf("lex: empty token at position :%zu:%zu", span.line, span.col);
             freeFileSpan(span);
             continue;
         // [ is always token by itself
         case '[':
-            assert(span.length == 1, "lex: [ is not by itself in token '%s' at position :%"term_SIZE_T":%"term_SIZE_T, span.str, span.line, span.col);
+            assert(span.length == 1);
             if (defd == nest)
             {
                 Token* t = listGetP(tokens, tokens.length - 1);
@@ -113,7 +110,7 @@ List lex(FILE* in, List* errors)
             continue;
         // ] is always token by itself
         case ']':
-            assert(span.length == 1, "lex: ] is not by itself in token '%s' at position :%"term_SIZE_T":%"term_SIZE_T, span.str, span.line, span.col);
+            assert(span.length == 1);
             if (nest == defd || nest == parm || nest == strc)
             {
                 defd = -1;
@@ -444,15 +441,15 @@ long long _getDigit(char digit)
 
 long long _readInt(char* str, char** endptr, long long base, bool* overflow)
 {
-    assert(str, "_readInt: parameter str was null");
-    assert(base <= 36 && base >= 2, "_readInt: parameter base was out of range (%"term_SIZE_T")", base);
+    assert(str);
+    assert(base <= 36 && base >= 2);
 
     long long num = 0;
     long long digit;
     bool ovfl = false;
     for (; *str && (digit = _getDigit(*str)) < base; str++)
     {
-        if (num > LONG_LONG_MAX / base || (num == LONG_LONG_MAX / base && digit > LONG_LONG_MAX % base))
+        if (num > LLONG_MAX / base || (num == LLONG_MAX / base && digit > LLONG_MAX % base))
             ovfl = true;
         num = num * base + digit;
     }
@@ -465,9 +462,9 @@ long long _readInt(char* str, char** endptr, long long base, bool* overflow)
 
 int _checkKeyword(const char* kw, T_TokenType type, FileSpan span, List* tokens, List* errors)
 {
-    assert(kw, "_checkKeyword: parameter kw was null");
-    assert(tokens, "_checkKeyword: parameter tokens was null");
-    assert(errors, "_checkKeyword: parameter errors was null");
+    assert(kw);
+    assert(tokens);
+    assert(errors);
 
     if (strcmp(kw, span.str) == 0)
     {
@@ -486,8 +483,8 @@ int _checkKeyword(const char* kw, T_TokenType type, FileSpan span, List* tokens,
 
 List _tokenize(FILE* in)
 {
-    assert(in, "_tokenize: parameter in was null");
-    assert(LEXER_READ_BUFFER_SIZE > 1, "_tokenize: minimum LEXER_READ_BUFFER_SIZE is 2 but it is %"term_SIZE_T, LEXER_READ_BUFFER_SIZE);
+    assert(in);
+    _Static_assert(LEXER_READ_BUFFER_SIZE > 1, "_tokenize: minimum LEXER_READ_BUFFER_SIZE is 2");
 
     List list = newList(FileSpan);
 
@@ -548,7 +545,7 @@ List _tokenize(FILE* in)
             if (pos != 0)
             {
                 if (pos >= LEXER_READ_BUFFER_SIZE)
-                    except("_tokenize: token is too long, max size is %"term_SIZE_T, LEXER_READ_BUFFER_SIZE);
+                    except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
                 buffer[pos] = chr;
                 pos++;
                 continue;
@@ -570,7 +567,7 @@ List _tokenize(FILE* in)
             if (pos == 0 || buffer[pos - 1] != '/')
             {
                 if (pos >= LEXER_READ_BUFFER_SIZE)
-                    except("_tokenize: token is too long, max size is %"term_SIZE_T, LEXER_READ_BUFFER_SIZE);
+                    except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
                 buffer[pos] = '/';
                 pos++;
                 continue;
@@ -596,7 +593,7 @@ List _tokenize(FILE* in)
                     break;
                 }
                 if (pos >= LEXER_READ_BUFFER_SIZE)
-                    except("_tokenize: token is too long, max size is %"term_SIZE_T, LEXER_READ_BUFFER_SIZE);
+                    except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
                 buffer[pos] = chr;
                 pos++;
             }
@@ -607,7 +604,7 @@ List _tokenize(FILE* in)
             if (pos == 0 || buffer[pos - 1] != '/')
             {
                 if (pos >= LEXER_READ_BUFFER_SIZE)
-                    except("_tokenize: token is too long, max size is %"term_SIZE_T, LEXER_READ_BUFFER_SIZE);
+                    except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
                 buffer[pos] = '*';
                 pos++;
                 continue;
@@ -633,7 +630,7 @@ List _tokenize(FILE* in)
                         col = 0;
                     }
                     if (pos >= LEXER_READ_BUFFER_SIZE)
-                        except("_tokenize: token is too long, max size is %"term_SIZE_T, LEXER_READ_BUFFER_SIZE);
+                        except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
                     buffer[pos] = chr;
                     pos++;
                     // check for the */ that ends the comment
@@ -649,7 +646,7 @@ List _tokenize(FILE* in)
         // read any nonspecial characters
         default:
             if (pos >= LEXER_READ_BUFFER_SIZE)
-                except("_tokenize: token is too long, max size is %"term_SIZE_T, LEXER_READ_BUFFER_SIZE);
+                except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
             buffer[pos] = chr;
             pos++;
             continue;
@@ -663,11 +660,11 @@ List _tokenize(FILE* in)
 
 size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size_t* line, size_t* col)
 {
-    assert(in, "_readQuote: parameter in was null");
-    assert(buffer, "_readQuote: parameter buffer was null");
-    assert(bufferSize > 1, "_readQuote: parameter bufferSize was to small (%"term_SIZE_T")", bufferSize);
-    assert(line, "_readQuote: parameter line was null");
-    assert(col, "_readQuote: parameter col was null");
+    assert(in);
+    assert(buffer);
+    assert(bufferSize > 1);
+    assert(line);
+    assert(col);
 
     // the first quote is part of the token
     *buffer = quoteChar;
@@ -680,7 +677,7 @@ size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size
         (*col)++;
         pos++;
         if (pos >= bufferSize)
-            except("_readQuote: quoted token is too long, max size is %"term_SIZE_T, bufferSize);
+            except("_readQuote: quoted token is too long, max size is %zu", bufferSize);
         
         buffer[pos] = chr;
 
@@ -739,7 +736,7 @@ size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size
                 buffer[pos] = 'x';
                 pos++;
                 if (pos >= bufferSize)
-                    except("_readQuote: :%"term_SIZE_T":%"term_SIZE_T": quoted token is too long, max size is %"term_SIZE_T, *line, *col, bufferSize);
+                    except("_readQuote: :%zu:%zu: quoted token is too long, max size is %zu", *line, *col, bufferSize);
                 buffer[pos] = buf[0];
                 return pos + 1;
             }
@@ -747,7 +744,7 @@ size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size
             char* end;
             buffer[pos] = _readInt(buf, &end, 16, NULL);
             if (*end)
-                except("_readQuote: :%"term_SIZE_T":%"term_SIZE_T": inavlid escape sequence", *line, *col);
+                except("_readQuote: :%zu:%zu: inavlid escape sequence", *line, *col);
             break;
         }
         // any other character after \ will be readed literaly (\\, \")

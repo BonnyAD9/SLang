@@ -1,9 +1,9 @@
 #include "Errors.h"
 
 #include <string.h>
+#include <assert.h>
 
 #include "FileSpan.h"
-#include "Assert.h"
 #include "Token.h"
 #include "Terminal.h"
 
@@ -51,7 +51,7 @@ void printErrorSpan(FILE* out, ErrorSpan token, const char* filename)
         break;
     }
 
-    fprintf(out, "%s:%"term_SIZE_T":%"term_SIZE_T":\t%s%s"term_COLRESET" %s\n\t%s%s"term_COLRESET"\n\t\x1b"term_BGREEN"help:\x1b[0m %s",
+    fprintf(out, "%s:%zu:%zu:\t%s%s"term_COLRESET" %s\n\t%s%s"term_COLRESET"\n\t\x1b"term_BGREEN"help:\x1b[0m %s",
             filename, token.span.line, token.span.col,
             msgColor, msgType, token.message,
             msgColor, token.span.str,
@@ -101,7 +101,7 @@ void printErrorToken(FILE* out, ErrorToken error, const char* filename)
         break;
     }
 
-    fprintf(out, "%s:%"term_SIZE_T":%"term_SIZE_T":\t%s%s"term_COLRESET" %s\n\t%s",
+    fprintf(out, "%s:%zu:%zu:\t%s%s"term_COLRESET" %s\n\t%s",
             filename, error.token.line, error.token.col,
             msgColor, msgType, error.message,
             msgColor);
@@ -121,6 +121,6 @@ char* _copyString(const char* str)
     size_t len = strlen(str);
     char* cpy = malloc((len + 1) * sizeof(char));
     strcpy_s(cpy,len + 1, str);
-    assert(cpy, "_copyString: failed to allocate string of size %"term_SIZE_T, len + 1);
+    assert(cpy);
     return cpy;
 }

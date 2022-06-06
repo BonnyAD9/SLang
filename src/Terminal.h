@@ -1,14 +1,6 @@
 #ifndef TERMINAL_INCLUDED
 #define TERMINAL_INCLUDED
 
-#ifdef _WIN32
-#define term_SIZE_T "Iu"
-#define term_SSIZE_T "Id"
-#else
-#define term_SIZE_T "zu"
-#define term_SSIZE_T "zd"
-#endif
-
 #define term_COLRESET "\x1b[0m"
 
 #define term_BBLACK "\x1b[90m"

@@ -2,16 +2,14 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-#include "Assert.h"
-#include "Terminal.h"
+#include <assert.h>
 
 FileSpan copyFileSpanFrom(const char* buffer, size_t length, size_t line, size_t col)
 {
-    assert(buffer, "copyFileSpanFom: parameter buffer was null");
+    assert(buffer);
     char* str = malloc((length + 1) * sizeof(char));
+    assert(str);
     str[length] = 0;
-    assert(str, "copyFileSpanFrom: failed to allocate string of length %"term_SIZE_T, length + 1);
     strncpy_s(str, length + 1, buffer, length);
     FileSpan span =
     {
