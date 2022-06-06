@@ -27,6 +27,7 @@ Hello World
 - [ ] pointers
 - [ ] ability to create function signatures
 - [ ] ability to import another file
+- [ ] llvm based compiler
 
 ## Builtin functions
 - `print` prints its arguments to the screen
