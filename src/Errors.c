@@ -120,7 +120,7 @@ char* _copyString(const char* str)
 {
     size_t len = strlen(str);
     char* cpy = malloc((len + 1) * sizeof(char));
-    strcpy(cpy, str);
+    strcpy_s(cpy,len + 1, str);
     assert(cpy, "_copyString: failed to allocate string of size %"term_SIZE_T, len + 1);
     return cpy;
 }

@@ -23,11 +23,10 @@ int main(int argc, char** argv)
     }
 
     const char* filename = argv[1];
-    FILE* f = fopen(filename, "r");
-    if (!f)
-    {
-        printf("Error: couldn't open file %s", filename);
-        return EXIT_FAILURE;
+    FILE* f;
+    if (fopen_s(&f, filename, "r")) {
+      printf("Error: couldn't open file %s", filename);
+      return EXIT_FAILURE;
     }
 
     List errs;

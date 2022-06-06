@@ -1,13 +1,13 @@
-CC:=gcc
+CC:=clang
 NAME:=SLang
 FILE:=bin/$(NAME).exe
-CFLAGS:=-Wall -std=c17 -g -lm
+CFLAGS:=-Wall -std=c17 -g
 DBGFLG:=-D_DEBUG -DASSERT_EXIT
 CFILES:=$(wildcard src/*.c)
 OBJS:=$(patsubst src/%.c, obj/%.o, $(CFILES))
 
 debug: $(OBJS)
-	$(CC) -lm $(OBJS) -o $(FILE)
+	$(CC) $(OBJS) -o $(FILE)
 
 release:
 	$(CC) $(CFLAGS) $(CFILES) -O3 -o bin/release/$(NAME).exe

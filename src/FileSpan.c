@@ -12,7 +12,7 @@ FileSpan copyFileSpanFrom(const char* buffer, size_t length, size_t line, size_t
     char* str = malloc((length + 1) * sizeof(char));
     str[length] = 0;
     assert(str, "copyFileSpanFrom: failed to allocate string of length %"term_SIZE_T, length + 1);
-    strncpy(str, buffer, length);
+    strncpy_s(str, length + 1, buffer, length);
     FileSpan span =
     {
         .str = str,

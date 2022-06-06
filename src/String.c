@@ -41,11 +41,11 @@ String strCLen(const char* str, size_t length)
         .data = malloc((length + 1) * sizeof(char)),
     };
 
-    s.data[length] = 0;
-
     assert(s.data, "strLiteral: failed to allocate string of length %"term_SIZE_T, length + 1);
 
-    strcpy(s.data, str);
+    s.data[length] = 0;
+
+    strcpy_s(s.data, length + 1, str);
     return s;
 }
 

@@ -134,7 +134,7 @@ Token fileSpanTokenPart(T_TokenType type, FileSpan span, size_t start, size_t le
     assert(str, "fileSpanTokenPart: failed to allocate string of size %"term_SIZE_T, length + 1);
     
     str[length] = 0;
-    strncpy(str, span.str + start, length);
+    strncpy_s(str, length + 1, span.str + start, length);
 
     return stringToken(type, str, span.line, span.col);
 }

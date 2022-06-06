@@ -6,13 +6,13 @@
     "configurations": [
         {
             "name": "Debug",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "cwd": "${workspaceFolder}/testing",
             "program": "${workspaceFolder}/bin/SLang.exe",
             "preLaunchTask": "MakeDebug",
             "args": [
-                "evaluatorTest.sl"
+                "evaluatorTest.sla"
             ]
         }
     ]
