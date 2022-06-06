@@ -7,7 +7,7 @@ CFILES:=$(wildcard src/*.c)
 OBJS:=$(patsubst src/%.c, obj/%.o, $(CFILES))
 
 debug: $(OBJS)
-	$(CC) $(OBJS) -o $(FILE)
+	$(CC) -g $(OBJS) -o $(FILE)
 
 release:
 	$(CC) $(CFLAGS) -DNDEBUG $(CFILES) -O3 -o bin/release/$(NAME).exe
