@@ -36,6 +36,7 @@ Hello World
 - `+` sums variable number of arguments of type bool, int or float
 - `-` negates single argument or subtracts second argument from the first (works with bool, int and float)
 - `*` multiplies variable number of arguments of type bool, int or float
+- `/` divides the first argument by the second argument (works with int and float)
 - `%` performs a modulo with two int arguments
 
 ## Comments
