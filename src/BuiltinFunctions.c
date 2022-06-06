@@ -5,6 +5,7 @@
 
 #include "List.h"
 #include "Runtime.h"
+#include "Terminal.h"
 
 void bifRegisterBuiltins(Runtime* r)
 {
@@ -58,8 +59,13 @@ Variable bifPrint(Function f, Runtime* r, List par)
         case V_NOTHING:
             printf("_");
             break;
+        case V_EXCEPTION:
+            printf("<error ");
+            rtPrintException(stdout, v);
+            printf(">");
+            break;
         default:
-            printf("<error>");
+            printf("<other>");
             break;
         }
         rtFreeVariable(v);

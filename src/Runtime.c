@@ -1,7 +1,11 @@
 #include "Runtime.h"
 
+#include <assert.h>
+#include <stdio.h>
+
 #include "List.h"
 #include "DebugTools.h"
+#include "Terminal.h"
 
 Runtime rtCreate(List *errors)
 {
@@ -24,6 +28,7 @@ void rtFreeVariable(Variable v)
     strFree(v.name);
     switch (v.type)
     {
+    case V_EXCEPTION:
     case V_STRING:
         strFree(v.str);
         return;
@@ -38,6 +43,36 @@ void rtFreeVariable(Variable v)
 void rtFreeFunction(Function f)
 {
     listDeepFree(f.parameters, String, s, strFree(s));
+}
+
+Variable rtException(String name, String message)
+{
+    Variable var =
+    {
+        .name = name,
+        .type = V_EXCEPTION,
+        .str = message,
+    };
+    return var;
+}
+
+void rtPrintExceptionE(FILE* out, Variable exception)
+{
+    assert(out);
+
+    if (exception.type != V_EXCEPTION)
+        return;
+    fprintf(out, term_BRED"%s:"term_COLRESET" %s", exception.name.data, exception.str.data);
+    exit(EXIT_FAILURE);
+}
+
+void rtPrintException(FILE* out, Variable exception)
+{
+    assert(out);
+
+    if (exception.type != V_EXCEPTION)
+        return;
+    fprintf(out, term_BRED"%s:"term_COLRESET" %s", exception.name.data, exception.str.data);
 }
 
 Variable rtCreateBoolVariable(String name, _Bool value)
@@ -120,6 +155,8 @@ Variable rtCopyVariable(String name, Variable var)
         return rtCreateFloatVariable(name, var.character);
     case V_STRING:
         return rtCreateStringVariable(name, strCopy(var.str));
+    case V_EXCEPTION:
+        return rtException(name, var.str);
     /*case V_FUNCTION:
         return createFunctionVariable(name, var.function);*/
     default:

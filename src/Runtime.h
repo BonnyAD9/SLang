@@ -1,6 +1,8 @@
 #ifndef RUNTIME_INCLUDED
 #define RUNTIME_INCLUDED
 
+#include <stdio.h>
+
 #include "List.h"
 #include "String.h"
 
@@ -14,6 +16,7 @@ typedef enum VariableType
     V_STRUCT,
     V_FUNCTION,
     V_NOTHING,
+    V_EXCEPTION,
 } VariableType;
 
 typedef struct Function Function;
@@ -58,6 +61,15 @@ struct Variable
 Runtime rtCreate(List *errors);
 
 /**
+ * @brief creates esception variable
+ * 
+ * @param name name of the exception
+ * @param message exception message
+ * @return Variable new instance
+ */
+Variable rtException(String name, String message);
+
+/**
  * @brief Create a Bool Variable object
  *
  * @param name name of the variable
@@ -65,6 +77,24 @@ Runtime rtCreate(List *errors);
  * @return Variable new instance
  */
 Variable rtCreateBoolVariable(String name, _Bool value);
+
+/**
+ * @brief prints exception info and exits if the given variable is exception
+ * 
+ * @param out where to print
+ * @param exception what to print
+ * @param exit if this is true the progam will exit
+ */
+void rtPrintExceptionE(FILE* out, Variable exception);
+
+/**
+ * @brief prints exception info if the given variable is exception
+ * 
+ * @param out where to print
+ * @param exception what to print
+ * @param exit if this is true the progam will exit
+ */
+void rtPrintException(FILE* out, Variable exception);
 
 /**
  * @brief Create a Int Variable object

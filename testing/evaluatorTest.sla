@@ -1,4 +1,2 @@
-[println "Hello World"]
-[println "Hello World"]
-[println "Hello World"]
-[println "Hello World"]
+[println "5 + 5 = " [+ 5 5]]
+[+ 5 5]

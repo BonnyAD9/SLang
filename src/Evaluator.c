@@ -56,21 +56,24 @@ List evEvaluate(ParserTree tree)
         ParserNode n = liGet(&li, ParserNode);
         liMove(&li);
 
+        Variable v;
+
         switch (n.type)
         {
         case P_NOTHING:
             continue;
         case P_FUNCTION_CALL:
-            rtFreeVariable(_evCall(n, &r));
-            continue;
+            v = _evCall(n, &r);
+            break;
         case P_FUNCTION_SETTER:
         case P_VARIABLE_SETTER:
-            _evSet(n, &r);
-            continue;
+            v = _evSet(n, &r);
+            break;
         default:
             dtExcept("evaluate: unsupported operation");
-            break;
         }
+        rtPrintExceptionE(stdout, v);
+        rtFreeVariable(v);
     }
 
     rtFree(r);
@@ -91,9 +94,11 @@ Variable _evCall(ParserNode node, Runtime* r)
         return rtCreateNothingVariable();
     case V_FUNCTION:
         break;
+    case V_EXCEPTION:
+        return v;
     default:
-        dtExcept("_call: invalid function");
-        return rtCreateNothingVariable();
+        rtFreeVariable(v);
+        return rtException(strLit("InvalidFunction"), strLit("This is not function"));
     }
 
     List par = listNew(Variable);
@@ -106,8 +111,7 @@ Variable _evCall(ParserNode node, Runtime* r)
 
 Variable _evSet(ParserNode n, Runtime* r)
 {
-    dtExcept("_set: not supported");
-    return rtCreateNothingVariable();
+    return rtException(strLit("NotSupported"), strLit("set is not yet supported"));
 }
 
 Variable _evEval(ParserNode n, Runtime* r)
@@ -129,7 +133,7 @@ Variable _evEval(ParserNode n, Runtime* r)
         Variable v;
         String s = strC(n.token->string);
         if (!rtGet(r, s, &v))
-            dtExcept("_e_eval: unknown identifier %s", s.data);
+            return rtException(strLit("InvalidName"), strLit("The function doesn't exist"));
         strFree(s);
         return v;
     }
@@ -143,13 +147,11 @@ Variable _evEval(ParserNode n, Runtime* r)
     case P_FUNCTION_DEFINITION:
         return _evDef(n, r);
     default:
-        dtExcept("_eval: invalid node type");
-        return rtCreateNothingVariable();
+        return rtException(strLit("InvalidOperation"), strLit("Cannot evaluate"));
     }
 }
 
 Variable _evDef(ParserNode n, Runtime* r)
 {
-    dtExcept("_e_def: not supported");
-    return rtCreateNothingVariable();
+    return rtException(strLit("NotSupported"), strLit("def is not supported"));
 }

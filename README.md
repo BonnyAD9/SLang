@@ -16,8 +16,9 @@ Hello World
 - Comments
 
 ## TODO
-- [ ] add runtime errors
+- [X] add runtime errors
 - [ ] add basic aritmetic functions (+, -, *, /, %)
+- [ ] add lazy evaluation
 - [ ] add `if` function
 - [ ] ability to set variables
 - [ ] ability to create functions
