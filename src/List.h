@@ -1,19 +1,19 @@
-#ifndef STRING_LIST_INCLUDED
-#define STRING_LIST_INCLUDED
+#ifndef list_LIST_INCLUDED
+#define list_LIST_INCLUDED
 
 #include <stdlib.h>
 
 #include "FileSpan.h"
 
-#ifndef STRING_LIST_START_SIZE
-#define STRING_LIST_START_SIZE 16LL
-#endif // STRING_LIST_START_SIZE
+#ifndef list_START_SIZE
+#define list_START_SIZE 16LL
+#endif // list_START_SIZE
 
-#ifndef STRING_LIST_ALLOC_SIZE
-#define STRING_LIST_ALLOC_SIZE 128LL
-#endif // STRING_LIST_ALLOC_SIZE
+#ifndef list_ALLOC_SIZE
+#define list_ALLOC_SIZE 128LL
+#endif // list_ALLOC_SIZE
 
-#define newList(__type) createList(sizeof(__type))
+#define listNew(__type) listCreate(sizeof(__type))
 
 #define listAdd(__list, __item, __type) \
 {\
@@ -30,7 +30,7 @@
         __type __name = *(__type*)listGetP(__list,__i);\
         __free;\
     }\
-    freeList(__list);\
+    listFree(__list);\
 }
 
 #define listForEach(__list, __type, __name, __code) \
@@ -126,14 +126,14 @@ void liAddP(ListIterator* iterator, void* element);
  * 
  * @return new StringList
  */
-List createList(size_t elementSize);
+List listCreate(size_t elementSize);
 
 /**
  * @brief frees this string list
  * 
  * @param list list to free
  */
-void freeList(List list);
+void listFree(List list);
 
 /**
  * @brief adds string to the list
@@ -152,4 +152,4 @@ void listAddP(List* list, void* pItem);
  */
 void* listGetP(List list, size_t index);
 
-#endif // STRING_LIST_INCLUDED
+#endif // list_LIST_INCLUDED

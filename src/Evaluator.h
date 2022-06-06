@@ -1,5 +1,5 @@
-#ifndef EVALUATOR_INCLUDED
-#define EVALUATOR_INCLUDED
+#ifndef ev_EVALUATOR_INCLUDED
+#define ev_EVALUATOR_INCLUDED
 
 #include "ParserTree.h"
 #include "List.h"
@@ -10,6 +10,6 @@
  * @param tree tree to run
  * @return List list of errors
  */
-List evaluate(ParserTree tree);
+List evEvaluate(ParserTree tree);
 
-#endif // EVALUATOR_INCLUDED
+#endif // ev_EVALUATOR_INCLUDED

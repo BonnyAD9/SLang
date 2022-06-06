@@ -5,7 +5,7 @@
 #include <string.h>
 #include <assert.h>
 
-void freeToken(Token token)
+void tokenFree(Token token)
 {
     switch (token.type)
     {
@@ -24,12 +24,12 @@ void freeToken(Token token)
     }
 }
 
-Token fileSpanToken(T_TokenType type, FileSpan span)
+Token tokenFileSpan(T_TokenType type, FileSpan span)
 {
-    return stringToken(type, span.str, span.line, span.col);
+    return tokenString(type, span.str, span.line, span.col);
 }
 
-Token createToken(T_TokenType type, size_t line, size_t col)
+Token tokenCreate(T_TokenType type, size_t line, size_t col)
 {
     Token t =
     {
@@ -41,7 +41,7 @@ Token createToken(T_TokenType type, size_t line, size_t col)
     return t;
 }
 
-Token stringToken(T_TokenType type, char *string, size_t line, size_t col)
+Token tokenString(T_TokenType type, char *string, size_t line, size_t col)
 {
     Token t =
     {
@@ -53,7 +53,7 @@ Token stringToken(T_TokenType type, char *string, size_t line, size_t col)
     return t;
 }
 
-Token integerToken(T_TokenType type, long long integer, size_t line, size_t col)
+Token tokenInteger(T_TokenType type, long long integer, size_t line, size_t col)
 {
     Token t =
     {
@@ -65,7 +65,7 @@ Token integerToken(T_TokenType type, long long integer, size_t line, size_t col)
     return t;
 }
 
-Token decimalToken(T_TokenType type, double decimal, size_t line, size_t col)
+Token tokenDecimal(T_TokenType type, double decimal, size_t line, size_t col)
 {
     Token t =
     {
@@ -77,7 +77,7 @@ Token decimalToken(T_TokenType type, double decimal, size_t line, size_t col)
     return t;
 }
 
-Token characterToken(T_TokenType type, char character, size_t line, size_t col)
+Token tokenCharacter(T_TokenType type, char character, size_t line, size_t col)
 {
     Token t =
     {
@@ -89,27 +89,27 @@ Token characterToken(T_TokenType type, char character, size_t line, size_t col)
     return t;
 }
 
-Token fileSpanTokenPos(T_TokenType type, FileSpan span)
+Token tokenFileSpanPos(T_TokenType type, FileSpan span)
 {
-    return createToken(type, span.line, span.col);
+    return tokenCreate(type, span.line, span.col);
 }
 
-Token fileSpanIntToken(T_TokenType type, long long value, FileSpan span)
+Token tokenFileSpanInt(T_TokenType type, long long value, FileSpan span)
 {
-    return integerToken(type, value, span.line, span.col);
+    return tokenInteger(type, value, span.line, span.col);
 }
 
-Token fileSpanDecToken(T_TokenType type, double value, FileSpan span)
+Token tokenFileSpanDec(T_TokenType type, double value, FileSpan span)
 {
-    return decimalToken(type, value, span.line, span.col);
+    return tokenDecimal(type, value, span.line, span.col);
 }
 
-Token fileSpanCharToken(T_TokenType type, char value, FileSpan span)
+Token tokenFileSpanChar(T_TokenType type, char value, FileSpan span)
 {
-    return characterToken(type, value, span.line, span.col);
+    return tokenCharacter(type, value, span.line, span.col);
 }
 
-Token fileSpanBoolToken(T_TokenType type, _Bool value, FileSpan span)
+Token tokenFileSpanBool(T_TokenType type, _Bool value, FileSpan span)
 {
     Token t =
     {
@@ -121,7 +121,7 @@ Token fileSpanBoolToken(T_TokenType type, _Bool value, FileSpan span)
     return t;
 }
 
-Token fileSpanTokenPart(T_TokenType type, FileSpan span, size_t start, size_t length)
+Token tokenFileSpanPart(T_TokenType type, FileSpan span, size_t start, size_t length)
 {
     assert(span.str);
     assert(start + length <= span.length);
@@ -133,10 +133,10 @@ Token fileSpanTokenPart(T_TokenType type, FileSpan span, size_t start, size_t le
     str[length] = 0;
     strncpy_s(str, length + 1, span.str + start, length);
 
-    return stringToken(type, str, span.line, span.col);
+    return tokenString(type, str, span.line, span.col);
 }
 
-void printToken(FILE* out, Token token)
+void tokenPrint(FILE* out, Token token)
 {
     switch (token.type)
     {
@@ -227,8 +227,8 @@ void printToken(FILE* out, Token token)
     }
 }
 
-void printTokenPos(FILE* out, Token token, const char* filename)
+void tokenPrintPos(FILE* out, Token token, const char* filename)
 {
     fprintf(out, "%s:%zu:%zu: ", filename, token.line, token.col);
-    printToken(out, token);
+    tokenPrint(out, token);
 }

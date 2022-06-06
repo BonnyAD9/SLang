@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     }
 
     List errs;
-    List tokens = lex(f, &errs);
+    List tokens = lexLex(f, &errs);
     fclose(f);
 
     size_t errors = 0;
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     size_t infos = 0;
     size_t msgs = 0;
     listForEach(errs, ErrorSpan, t,
-        printErrorSpan(stdout, t, filename);
+        errPrintErrorSpan(stdout, t, filename);
         printf("\n");
         msgs++;
         switch (t.level)
@@ -58,14 +58,14 @@ int main(int argc, char** argv)
         printf("#Errors: %zu\n#Warnings: %zu\n#Infos: %zu\n", errors, warnings, infos);
         return EXIT_FAILURE;
     }
-    listDeepFree(errs, ErrorSpan, t, freeErrorSpan(t));
+    listDeepFree(errs, ErrorSpan, t, errFreeErrorSpan(t));
 
-    ParserTree tree = parse(tokens, &errs);
-    freeList(tokens);
+    ParserTree tree = parParse(tokens, &errs);
+    listFree(tokens);
     tree.filename = filename;
 
     listForEach(errs, ErrorToken, t,
-        printErrorToken(stdout, t, filename);
+        errPrintErrorToken(stdout, t, filename);
         printf("\n");
         msgs++;
         switch (t.level)
@@ -85,10 +85,10 @@ int main(int argc, char** argv)
         printf("#Errors: %zu\n#Warnings: %zu\n#Infos: %zu\n", errors, warnings, infos);
     if (errors != 0)
         return EXIT_FAILURE;
-    listDeepFree(errs, ErrorToken, t, freeErrorToken(t));
+    listDeepFree(errs, ErrorToken, t, errFreeErrorToken(t));
 
-    freeList(evaluate(tree));
-    freeParserTree(tree);
+    listFree(evEvaluate(tree));
+    ptFree(tree);
 
     return EXIT_SUCCESS;
 }

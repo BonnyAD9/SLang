@@ -3,23 +3,23 @@
 #include "List.h"
 #include "DebugTools.h"
 
-Runtime createRuntime(List *errors)
+Runtime rtCreate(List *errors)
 {
     Runtime r =
         {
-            .variables = newList(Variable),
+            .variables = listNew(Variable),
             .errors = liCreate(errors),
         };
 
     return r;
 }
 
-void freeRuntime(Runtime r)
+void rtFree(Runtime r)
 {
-    listDeepFree(r.variables, Variable, v, freeVariable(v));
+    listDeepFree(r.variables, Variable, v, rtFreeVariable(v));
 }
 
-void freeVariable(Variable v)
+void rtFreeVariable(Variable v)
 {
     strFree(v.name);
     switch (v.type)
@@ -28,19 +28,19 @@ void freeVariable(Variable v)
         strFree(v.str);
         return;
     case V_FUNCTION:
-        freeFunction(v.function);
+        rtFreeFunction(v.function);
         return;
     default:
         break;
     }
 }
 
-void freeFunction(Function f)
+void rtFreeFunction(Function f)
 {
     listDeepFree(f.parameters, String, s, strFree(s));
 }
 
-Variable createBoolVariable(String name, _Bool value)
+Variable rtCreateBoolVariable(String name, _Bool value)
 {
     Variable v =
     {
@@ -51,7 +51,7 @@ Variable createBoolVariable(String name, _Bool value)
     return v;
 }
 
-Variable createIntVariable(String name, long long value)
+Variable rtCreateIntVariable(String name, long long value)
 {
     Variable v =
     {
@@ -62,7 +62,7 @@ Variable createIntVariable(String name, long long value)
     return v;
 }
 
-Variable createFloatVariable(String name, double value)
+Variable rtCreateFloatVariable(String name, double value)
 {
     Variable v =
     {
@@ -73,7 +73,7 @@ Variable createFloatVariable(String name, double value)
     return v;
 }
 
-Variable createCharVariable(String name, char value)
+Variable rtCreateCharVariable(String name, char value)
 {
     Variable v =
     {
@@ -84,7 +84,7 @@ Variable createCharVariable(String name, char value)
     return v;
 }
 
-Variable createStringVariable(String name, String value)
+Variable rtCreateStringVariable(String name, String value)
 {
     Variable v =
     {
@@ -95,7 +95,7 @@ Variable createStringVariable(String name, String value)
     return v;
 }
 
-Variable createFunctionVariable(String name, Function value)
+Variable rtCreateFunctionVariable(String name, Function value)
 {
     Variable v =
     {
@@ -106,29 +106,29 @@ Variable createFunctionVariable(String name, Function value)
     return v;
 }
 
-Variable copyVariable(String name, Variable var)
+Variable rtCopyVariable(String name, Variable var)
 {
     switch (var.type)
     {
     case V_BOOL:
-        return createBoolVariable(name, var.boolean);
+        return rtCreateBoolVariable(name, var.boolean);
     case V_INT:
-        return createIntVariable(name, var.integer);
+        return rtCreateIntVariable(name, var.integer);
     case V_FLOAT:
-        return createFloatVariable(name, var.decimal);
+        return rtCreateFloatVariable(name, var.decimal);
     case V_CHAR:
-        return createFloatVariable(name, var.character);
+        return rtCreateFloatVariable(name, var.character);
     case V_STRING:
-        return createStringVariable(name, strCopy(var.str));
+        return rtCreateStringVariable(name, strCopy(var.str));
     /*case V_FUNCTION:
         return createFunctionVariable(name, var.function);*/
     default:
-        except("copyVariable: invalid variable type");
-        return createBoolVariable(strEmpty(), 0);
+        dtExcept("copyVariable: invalid variable type");
+        return rtCreateBoolVariable(strEmpty(), 0);
     }
 }
 
-Function createFunction(Action action, List parameters)
+Function rtCreateFunction(Action action, List parameters)
 {
     Function f =
     {
@@ -138,12 +138,12 @@ Function createFunction(Action action, List parameters)
     return f;
 }
 
-Variable invokeFunction(Function f, Runtime* r, List par)
+Variable rtInvokeFunction(Function f, Runtime* r, List par)
 {
     return f.action(f, r, par);
 }
 
-Variable createNothingVariable()
+Variable rtCreateNothingVariable()
 {
     Variable v =
     {
@@ -153,7 +153,7 @@ Variable createNothingVariable()
     return v;
 }
 
-_Bool runtimeGet(Runtime* r, String name, Variable* v)
+_Bool rtGet(Runtime* r, String name, Variable* v)
 {
     ListIterator li = liCreate(&r->variables);
     while (liCan(&li))
@@ -169,32 +169,32 @@ _Bool runtimeGet(Runtime* r, String name, Variable* v)
     return 0;
 }
 
-Variable boolVariable(_Bool value)
+Variable rtBoolVariable(_Bool value)
 {
-    return createBoolVariable(strEmpty(), value);
+    return rtCreateBoolVariable(strEmpty(), value);
 }
 
-Variable intVariable(long long value)
+Variable rtIntVariable(long long value)
 {
-    return createIntVariable(strEmpty(), value);
+    return rtCreateIntVariable(strEmpty(), value);
 }
 
-Variable floatVariable(double value)
+Variable rtFloatVariable(double value)
 {
-    return createFloatVariable(strEmpty(), value);
+    return rtCreateFloatVariable(strEmpty(), value);
 }
 
-Variable charVariable(char value)
+Variable rtCharVariable(char value)
 {
-    return createCharVariable(strEmpty(), value);
+    return rtCreateCharVariable(strEmpty(), value);
 }
 
-Variable stringVariable(String value)
+Variable rtStringVariable(String value)
 {
-    return createStringVariable(strEmpty(), value);
+    return rtCreateStringVariable(strEmpty(), value);
 }
 
-Variable functionVariable(Function value)
+Variable rtFunctionVariable(Function value)
 {
-    return createFunctionVariable(strEmpty(), value);
+    return rtCreateFunctionVariable(strEmpty(), value);
 }

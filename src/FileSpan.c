@@ -4,7 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
-FileSpan copyFileSpanFrom(const char* buffer, size_t length, size_t line, size_t col)
+FileSpan fsCopyFrom(const char* buffer, size_t length, size_t line, size_t col)
 {
     assert(buffer);
     char* str = malloc((length + 1) * sizeof(char));
@@ -21,7 +21,7 @@ FileSpan copyFileSpanFrom(const char* buffer, size_t length, size_t line, size_t
     return span;
 }
 
-void freeFileSpan(FileSpan span)
+void fsFree(FileSpan span)
 {
     free(span.str);
 }

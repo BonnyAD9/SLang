@@ -13,21 +13,21 @@
  * @param str string to copy
  * @return char* copy of the string
  */
-char* _copyString(const char* str);
+char* _errCopyString(const char* str);
 
-ErrorSpan createErrorSpan(ErrorLevel level, FileSpan span, const char* message, const char* help)
+ErrorSpan errCreateErrorSpan(ErrorLevel level, FileSpan span, const char* message, const char* help)
 {
     ErrorSpan error =
     {
         .level = level,
         .span = span,
-        .message = _copyString(message),
-        .help = _copyString(help),
+        .message = _errCopyString(message),
+        .help = _errCopyString(help),
     };
     return error;
 }
 
-void printErrorSpan(FILE* out, ErrorSpan token, const char* filename)
+void errPrintErrorSpan(FILE* out, ErrorSpan token, const char* filename)
 {
     const char* msgType;
     const char* msgColor;
@@ -58,26 +58,26 @@ void printErrorSpan(FILE* out, ErrorSpan token, const char* filename)
             token.help);
 }
 
-void freeErrorSpan(ErrorSpan error)
+void errFreeErrorSpan(ErrorSpan error)
 {
-    freeFileSpan(error.span);
+    fsFree(error.span);
     free(error.message);
     free(error.help);
 }
 
-ErrorToken createErrorToken(ErrorLevel level, Token token, const char* message, const char* help)
+ErrorToken errCreateErrorToken(ErrorLevel level, Token token, const char* message, const char* help)
 {
     ErrorToken t =
     {
         .level = level,
         .token = token,
-        .message = _copyString(message),
-        .help = _copyString(help),
+        .message = _errCopyString(message),
+        .help = _errCopyString(help),
     };
     return t;
 }
 
-void printErrorToken(FILE* out, ErrorToken error, const char* filename)
+void errPrintErrorToken(FILE* out, ErrorToken error, const char* filename)
 {
     const char *msgType;
     const char *msgColor;
@@ -105,18 +105,18 @@ void printErrorToken(FILE* out, ErrorToken error, const char* filename)
             filename, error.token.line, error.token.col,
             msgColor, msgType, error.message,
             msgColor);
-    printToken(out, error.token);
+    tokenPrint(out, error.token);
     fprintf(out, term_COLRESET"\n\t"term_BGREEN"help: "term_COLRESET" %s", error.help);
 }
 
-void freeErrorToken(ErrorToken error)
+void errFreeErrorToken(ErrorToken error)
 {
-    freeToken(error.token);
+    tokenFree(error.token);
     free(error.message);
     free(error.help);
 }
 
-char* _copyString(const char* str)
+char* _errCopyString(const char* str)
 {
     size_t len = strlen(str);
     char* cpy = malloc((len + 1) * sizeof(char));

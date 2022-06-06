@@ -1,13 +1,13 @@
-#ifndef BUILTIN_FUNCTIONS_INCLUDED
-#define BUILTIN_FUNCTIONS_INCLUDED
+#ifndef bif_BUILTIN_FUNCTIONS_INCLUDED
+#define bif_BUILTIN_FUNCTIONS_INCLUDED
 
 #include "Runtime.h"
 #include "List.h"
 
-void registerBuiltins(Runtime* r);
+void bifRegisterBuiltins(Runtime* r);
 
-Variable println(Function f, Runtime* r, List par);
+Variable bifPrintln(Function f, Runtime* r, List par);
 
-Variable print(Function f, Runtime* r, List par);
+Variable bifPrint(Function f, Runtime* r, List par);
 
-#endif // BUILTIN_FUNCTIONS_INCLUDED
+#endif // bif_BUILTIN_FUNCTIONS_INCLUDED

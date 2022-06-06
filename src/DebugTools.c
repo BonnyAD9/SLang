@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-int dprintf(const char *msg, ...)
+int dtPrintf(const char *msg, ...)
 {
     va_list args;
     va_start(args, msg);
@@ -16,7 +16,7 @@ int dprintf(const char *msg, ...)
     return res;
 }
 
-void _Noreturn except(const char *msg, ...)
+void _Noreturn dtExcept(const char *msg, ...)
 {
     va_list args;
     va_start(args, msg);

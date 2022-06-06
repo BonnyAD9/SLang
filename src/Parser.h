@@ -11,6 +11,6 @@
  * @param errors output for errors
  * @return ParserTree parsed tokens
  */
-ParserTree parse(List tokens, List* errors);
+ParserTree parParse(List tokens, List* errors);
 
 #endif // PARSER_INCLUDED

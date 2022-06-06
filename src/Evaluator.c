@@ -15,7 +15,7 @@
  * @param r runtime context
  * @return Variable call result
  */
-Variable _call(ParserNode n, Runtime* r);
+Variable _evCall(ParserNode n, Runtime* r);
 
 /**
  * @brief sets variable
@@ -24,7 +24,7 @@ Variable _call(ParserNode n, Runtime* r);
  * @param r runtime context
  * @return Variable the variable that was set
  */
-Variable _e_set(ParserNode n, Runtime* r);
+Variable _evSet(ParserNode n, Runtime* r);
 
 /**
  * @brief evaluates statement
@@ -33,7 +33,7 @@ Variable _e_set(ParserNode n, Runtime* r);
  * @param r runtime context
  * @return Variable value
  */
-Variable _e_eval(ParserNode n, Runtime* r);
+Variable _evEval(ParserNode n, Runtime* r);
 
 /**
  * @brief creates new function
@@ -42,14 +42,14 @@ Variable _e_eval(ParserNode n, Runtime* r);
  * @param r runtime context
  * @return Variable new function
  */
-Variable _e_def(ParserNode n, Runtime* r);
+Variable _evDef(ParserNode n, Runtime* r);
 
-List evaluate(ParserTree tree)
+List evEvaluate(ParserTree tree)
 {
     ListIterator li = liCreate(&tree.nodes);
-    List errors = newList(FileSpan);
-    Runtime r = createRuntime(&errors);
-    registerBuiltins(&r);
+    List errors = listNew(FileSpan);
+    Runtime r = rtCreate(&errors);
+    bifRegisterBuiltins(&r);
 
     while (liCan(&li))
     {
@@ -61,95 +61,95 @@ List evaluate(ParserTree tree)
         case P_NOTHING:
             continue;
         case P_FUNCTION_CALL:
-            freeVariable(_call(n, &r));
+            rtFreeVariable(_evCall(n, &r));
             continue;
         case P_FUNCTION_SETTER:
         case P_VARIABLE_SETTER:
-            _e_set(n, &r);
+            _evSet(n, &r);
             continue;
         default:
-            except("evaluate: unsupported operation");
+            dtExcept("evaluate: unsupported operation");
             break;
         }
     }
 
-    freeRuntime(r);
+    rtFree(r);
     return errors;
 }
 
-Variable _call(ParserNode node, Runtime* r)
+Variable _evCall(ParserNode node, Runtime* r)
 {
     assert(node.nodes.length > 0);
 
     ListIterator li = liCreate(&node.nodes);
     ParserNode n = liGet(&li, ParserNode);
-    Variable v = _e_eval(n, r);
+    Variable v = _evEval(n, r);
     
     switch (v.type)
     {
     case V_NOTHING:
-        return createNothingVariable();
+        return rtCreateNothingVariable();
     case V_FUNCTION:
         break;
     default:
-        except("_call: invalid function");
-        return createNothingVariable();
+        dtExcept("_call: invalid function");
+        return rtCreateNothingVariable();
     }
 
-    List par = newList(Variable);
+    List par = listNew(Variable);
 
     while (liMove(&li))
-        listAdd(par, _e_eval(liGet(&li, ParserNode), r), Variable);
+        listAdd(par, _evEval(liGet(&li, ParserNode), r), Variable);
 
-    return invokeFunction(v.function, r, par);
+    return rtInvokeFunction(v.function, r, par);
 }
 
-Variable _e_set(ParserNode n, Runtime* r)
+Variable _evSet(ParserNode n, Runtime* r)
 {
-    except("_set: not supported");
-    return createNothingVariable();
+    dtExcept("_set: not supported");
+    return rtCreateNothingVariable();
 }
 
-Variable _e_eval(ParserNode n, Runtime* r)
+Variable _evEval(ParserNode n, Runtime* r)
 {
     switch (n.type)
     {
     case P_VALUE_INTEGER:
-        return intVariable(n.token->integer);
+        return rtIntVariable(n.token->integer);
     case P_VALUE_FLOAT:
-        return floatVariable(n.token->decimal);
+        return rtFloatVariable(n.token->decimal);
     case P_VALUE_CHAR:
-        return charVariable(n.token->character);
+        return rtCharVariable(n.token->character);
     case P_VALUE_STRING:
-        return stringVariable(strC(n.token->string));
+        return rtStringVariable(strC(n.token->string));
     case P_VALUE_BOOL:
-        return boolVariable(n.token->string);
+        return rtBoolVariable(n.token->string);
     case P_IDENTIFIER:
     {
         Variable v;
         String s = strC(n.token->string);
-        if (!runtimeGet(r, s, &v))
-            except("_e_eval: unknown identifier %s", s.data);
+        if (!rtGet(r, s, &v))
+            dtExcept("_e_eval: unknown identifier %s", s.data);
         strFree(s);
         return v;
     }
     case P_FUNCTION_CALL:
-        return _call(n, r);
+        return _evCall(n, r);
     case P_VARIABLE_SETTER:
     case P_FUNCTION_SETTER:
-        return _e_set(n, r);
+        return _evSet(n, r);
     case P_NOTHING:
-        return createNothingVariable();
+        return rtCreateNothingVariable();
     case P_FUNCTION_DEFINITION:
-        return _e_def(n, r);
+        return _evDef(n, r);
     default:
-        except("_eval: invalid node type");
-        return createNothingVariable();
+        dtExcept("_eval: invalid node type");
+        return rtCreateNothingVariable();
     }
 }
 
-Variable _e_def(ParserNode n, Runtime* r)
+Variable _evDef(ParserNode n, Runtime* r)
 {
-    except("_e_def: not supported");
-    return createNothingVariable();
+    dtExcept("_e_def: not supported");
+    return rtCreateNothingVariable();
 }

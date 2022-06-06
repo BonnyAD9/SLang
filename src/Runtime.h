@@ -55,7 +55,7 @@ struct Variable
  * @param errors error output
  * @return Runtime new instance
  */
-Runtime createRuntime(List *errors);
+Runtime rtCreate(List *errors);
 
 /**
  * @brief Create a Bool Variable object
@@ -64,7 +64,7 @@ Runtime createRuntime(List *errors);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable createBoolVariable(String name, _Bool value);
+Variable rtCreateBoolVariable(String name, _Bool value);
 
 /**
  * @brief Create a Int Variable object
@@ -73,7 +73,7 @@ Variable createBoolVariable(String name, _Bool value);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable createIntVariable(String name, long long value);
+Variable rtCreateIntVariable(String name, long long value);
 
 /**
  * @brief Create a Float Variable object
@@ -82,7 +82,7 @@ Variable createIntVariable(String name, long long value);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable createFloatVariable(String name, double value);
+Variable rtCreateFloatVariable(String name, double value);
 
 /**
  * @brief Create a Char Variable object
@@ -91,7 +91,7 @@ Variable createFloatVariable(String name, double value);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable createCharVariable(String name, char value);
+Variable rtCreateCharVariable(String name, char value);
 
 /**
  * @brief Create a String Variable object
@@ -100,7 +100,7 @@ Variable createCharVariable(String name, char value);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable createStringVariable(String name, String value);
+Variable rtCreateStringVariable(String name, String value);
 
 /**
  * @brief Create a Function Variable object
@@ -109,7 +109,7 @@ Variable createStringVariable(String name, String value);
  * @param fun value of the variable
  * @return Variable new instance
  */
-Variable createFunctionVariable(String name, Function fun);
+Variable rtCreateFunctionVariable(String name, Function fun);
 
 /**
  * @brief Create a Bool Variable object
@@ -117,7 +117,7 @@ Variable createFunctionVariable(String name, Function fun);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable boolVariable(_Bool value);
+Variable rtBoolVariable(_Bool value);
 
 /**
  * @brief Create a Int Variable object
@@ -125,7 +125,7 @@ Variable boolVariable(_Bool value);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable intVariable(long long value);
+Variable rtIntVariable(long long value);
 
 /**
  * @brief Create a Float Variable object
@@ -133,7 +133,7 @@ Variable intVariable(long long value);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable floatVariable(double value);
+Variable rtFloatVariable(double value);
 
 /**
  * @brief Create a Char Variable object
@@ -141,7 +141,7 @@ Variable floatVariable(double value);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable charVariable(char value);
+Variable rtCharVariable(char value);
 
 /**
  * @brief Create a String Variable object
@@ -149,7 +149,7 @@ Variable charVariable(char value);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable stringVariable(String value);
+Variable rtStringVariable(String value);
 
 /**
  * @brief Create a Function Variable object
@@ -157,14 +157,14 @@ Variable stringVariable(String value);
  * @param fun value of the variable
  * @return Variable new instance
  */
-Variable functionVariable(Function fun);
+Variable rtFunctionVariable(Function fun);
 
 /**
  * @brief Create a Nothing Variable object
  * 
  * @return Variable empty variable
  */
-Variable createNothingVariable();
+Variable rtCreateNothingVariable();
 
 /**
  * @brief copies a variable
@@ -173,7 +173,7 @@ Variable createNothingVariable();
  * @param var variable to copy
  * @return Variable copied variable
  */
-Variable copyVariable(String name, Variable var);
+Variable rtCopyVariable(String name, Variable var);
 
 /**
  * @brief Create a Function object
@@ -183,28 +183,28 @@ Variable copyVariable(String name, Variable var);
  * @param parameters names of parameters of the function
  * @return Function new instance
  */
-Function createFunction(Action action, List parameters);
+Function rtCreateFunction(Action action, List parameters);
 
 /**
  * @brief frees runtime
  *
  * @param r runtime to free
  */
-void freeRuntime(Runtime r);
+void rtFree(Runtime r);
 
 /**
  * @brief frees variable
  *
  * @param v variable to free
  */
-void freeVariable(Variable v);
+void rtFreeVariable(Variable v);
 
 /**
  * @brief frees function
  *
  * @param f function to free
  */
-void freeFunction(Function f);
+void rtFreeFunction(Function f);
 
 /**
  * @brief invokes the given function
@@ -214,7 +214,7 @@ void freeFunction(Function f);
  * @param par parameters
  * @return VarFun result of the function
  */
-Variable invokeFunction(Function f, Runtime* r, List par);
+Variable rtInvokeFunction(Function f, Runtime* r, List par);
 
 /**
  * @brief finds variable with the given name
@@ -225,6 +225,6 @@ Variable invokeFunction(Function f, Runtime* r, List par);
  * @return true variable was found
  * @return false variable was not found
  */
-_Bool runtimeGet(Runtime* r, String name, Variable* v);
+_Bool rtGet(Runtime* r, String name, Variable* v);
 
 #endif // RUNTIME_INCLUDED

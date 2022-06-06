@@ -5,12 +5,12 @@
 
 #include "FileSpan.h"
 
-List createList(size_t elementSize)
+List listCreate(size_t elementSize)
 {
     List list =
     {
-        .data = malloc(STRING_LIST_START_SIZE * elementSize),
-        .allocated = STRING_LIST_START_SIZE,
+        .data = malloc(list_START_SIZE * elementSize),
+        .allocated = list_START_SIZE,
         .length = 0,
         .element = elementSize
     };
@@ -20,7 +20,7 @@ List createList(size_t elementSize)
     return list;
 }
 
-void freeList(List list)
+void listFree(List list)
 {
     assert(list.data);
     free(list.data);
@@ -32,7 +32,7 @@ void listAddP(List* list, void* pItem)
     unsigned char* item = (unsigned char*)pItem;
     if (list->allocated == list->length)
     {
-        size_t newSize = list->allocated < STRING_LIST_ALLOC_SIZE ? list->allocated * 2 : list->allocated + STRING_LIST_ALLOC_SIZE;
+        size_t newSize = list->allocated < list_ALLOC_SIZE ? list->allocated * 2 : list->allocated + list_ALLOC_SIZE;
         unsigned char* newData = realloc(list->data, newSize * list->element);
         assert(newData);
         list->data = newData;

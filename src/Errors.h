@@ -1,5 +1,5 @@
-#ifndef ERROR_TOKEN_INCLUDED
-#define ERROR_TOKEN_INCLUDED
+#ifndef err_ERRORS_INCLUDED
+#define err_ERRORS_INCLUDED
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,7 +39,7 @@ typedef struct ErrorToken
  * @param help suggestion for fixing the error
  * @return ErrorToken 
  */
-ErrorSpan createErrorSpan(ErrorLevel level, FileSpan span, const char* message, const char* help);
+ErrorSpan errCreateErrorSpan(ErrorLevel level, FileSpan span, const char* message, const char* help);
 
 /**
  * @brief prints this error span into the given stream
@@ -48,14 +48,14 @@ ErrorSpan createErrorSpan(ErrorLevel level, FileSpan span, const char* message, 
  * @param error error to print
  * @param filename file in which this span is
  */
-void printErrorSpan(FILE* out, ErrorSpan error, const char* filename);
+void errPrintErrorSpan(FILE* out, ErrorSpan error, const char* filename);
 
 /**
  * @brief frees error span
  * 
  * @param error error span to free
  */
-void freeErrorSpan(ErrorSpan error);
+void errFreeErrorSpan(ErrorSpan error);
 
 /**
  * @brief Create a Error Token object
@@ -66,7 +66,7 @@ void freeErrorSpan(ErrorSpan error);
  * @param help suggestion for fixing the error
  * @return ErrorToken new instance
  */
-ErrorToken createErrorToken(ErrorLevel level, Token token, const char* message, const char* help);
+ErrorToken errCreateErrorToken(ErrorLevel level, Token token, const char* message, const char* help);
 
 /**
  * @brief prints the given error to the stream
@@ -75,13 +75,13 @@ ErrorToken createErrorToken(ErrorLevel level, Token token, const char* message, 
  * @param error error to print
  * @param filename file in which the token is
  */
-void printErrorToken(FILE* out, ErrorToken error, const char* filename);
+void errPrintErrorToken(FILE* out, ErrorToken error, const char* filename);
 
 /**
  * @brief frees the given error token
  * 
  * @param error error token to free
  */
-void freeErrorToken(ErrorToken error);
+void errFreeErrorToken(ErrorToken error);
 
-#endif // ERROR_TOKEN_INCLUDED
+#endif // err_ERRORS_INCLUDED

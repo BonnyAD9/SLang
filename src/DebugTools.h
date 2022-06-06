@@ -1,14 +1,14 @@
-#ifndef ASSERT_INCLUDED
-#define ASSERT_INCLUDED
+#ifndef dt_DEBUG_TOOLS_INCLUDED
+#define dt_DEBUG_TOOLS_INCLUDED
 
 #ifdef NDEBUG
 
 #define dprintf(msg, ...)
 
 #else // NDEBUG
-int dprintf(const char* msg, ...);
+int dtPrintf(const char* msg, ...);
 #endif // NEDUBG
 
-void _Noreturn except(const char* msg, ...);
+void _Noreturn dtExcept(const char* msg, ...);
 
-#endif // ASSERT_INCLUDED
+#endif // dt_DEBUG_TOOLS_INCLUDED

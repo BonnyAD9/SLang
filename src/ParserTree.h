@@ -51,21 +51,21 @@ typedef struct ParserTree
  * @param out where to print
  * @param tree tree to print
  */
-void printParserTree(FILE* out, ParserTree tree);
+void ptPrint(FILE* out, ParserTree tree);
 
 /**
  * @brief Create a Parser Tree object
  * 
  * @return ParserTree new instance
  */
-ParserTree createParserTree();
+ParserTree ptCreate();
 
 /**
  * @brief frees the parser tree with all of its nodes
  * 
  * @param tree tree to free
  */
-void freeParserTree(ParserTree tree);
+void ptFree(ParserTree tree);
 
 /**
  * @brief Create a Parser Node object
@@ -74,7 +74,7 @@ void freeParserTree(ParserTree tree);
  * @param token token of the node
  * @return ParserNode new instance
  */
-ParserNode tokenParserNode(ParserNodeType type, Token token);
+ParserNode ptTokenNode(ParserNodeType type, Token token);
 
 /**
  * @brief Create a Parser Node object
@@ -82,7 +82,7 @@ ParserNode tokenParserNode(ParserNodeType type, Token token);
  * @param type type of the parser node
  * @return ParserNode new instance
  */
-ParserNode createParserNode(ParserNodeType type);
+ParserNode ptCreateNode(ParserNodeType type);
 
 /**
  * @brief frees the parser node
@@ -90,7 +90,7 @@ ParserNode createParserNode(ParserNodeType type);
  * @param node node to free
  * @param recursive indicates whether to free all childs
  */
-void freeParserNode(ParserNode node, _Bool recursive);
+void ptFreeNode(ParserNode node, _Bool recursive);
 
 /**
  * @brief adds node to parser tree
@@ -98,7 +98,7 @@ void freeParserNode(ParserNode node, _Bool recursive);
  * @param tree where to add the parser node
  * @param node node to add
  */
-void parserTreeAdd(ParserTree* tree, ParserNode node);
+void ptAdd(ParserTree* tree, ParserNode node);
 
 /**
  * @brief adds node to node
@@ -106,6 +106,6 @@ void parserTreeAdd(ParserTree* tree, ParserNode node);
  * @param node where to add the node
  * @param n node to add
  */
-void parserNodeAdd(ParserNode* node, ParserNode n);
+void ptNodeAdd(ParserNode* node, ParserNode n);
 
 #endif // PARSER_TREE_INCLUDED

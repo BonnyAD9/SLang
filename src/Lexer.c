@@ -19,7 +19,7 @@
  * @param in File to read from
  * @return List list of FileSpans
  */
-List _tokenize(FILE* in);
+List _lexTokenize(FILE* in);
 
 /**
  * @brief reads quoted text
@@ -32,7 +32,7 @@ List _tokenize(FILE* in);
  * @param col tracks column number
  * @return size_t number of characters readed
  */
-size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size_t* line, size_t* col);
+size_t _lexReadQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size_t* line, size_t* col);
 
 /**
  * @brief reads positive int from string
@@ -43,7 +43,7 @@ size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size
  * @param overflow this is set to true if the integer overflows the long long limit
  * @return long readed integer
  */
-long long _readInt(char* str, char** endptr, long long base, _Bool* overflow);
+long long _lexReadInt(char* str, char** endptr, long long base, _Bool* overflow);
 
 /**
  * @brief checks the keyword and adds it to the list
@@ -57,7 +57,7 @@ long long _readInt(char* str, char** endptr, long long base, _Bool* overflow);
  * @return 1 keyword matched successfully
  * @return -1 keyword matced unsuccessfully
  */
-int _checkKeyword(const char* kw, T_TokenType type, FileSpan span, List* tokens, List* errors);
+int _lexCheckKeyword(const char* kw, T_TokenType type, FileSpan span, List* tokens, List* errors);
 
 /**
  * @brief converts the given char to numnerical digit
@@ -65,17 +65,17 @@ int _checkKeyword(const char* kw, T_TokenType type, FileSpan span, List* tokens,
  * @param digit char to convert
  * @return long the number it represents
  */
-long long _getDigit(char digit);
+long long _lexGetDigit(char digit);
 
-List lex(FILE* in, List* errors)
+List lexLex(FILE* in, List* errors)
 {
     assert(in);
     assert(errors);
 
     // read from file and prepare output lists
-    List list = _tokenize(in);
-    List errs = newList(ErrorSpan);
-    List tokens = newList(Token);
+    List list = _lexTokenize(in);
+    List errs = listNew(ErrorSpan);
+    List tokens = listNew(Token);
 
     long long nest = 0;
     long long defd = -1;
@@ -91,8 +91,8 @@ List lex(FILE* in, List* errors)
         {
         // this case should never happen
         case 0:
-            dprintf("lex: empty token at position :%zu:%zu", span.line, span.col);
-            freeFileSpan(span);
+            dtPrintf("lex: empty token at position :%zu:%zu", span.line, span.col);
+            fsFree(span);
             continue;
         // [ is always token by itself
         case '[':
@@ -103,8 +103,8 @@ List lex(FILE* in, List* errors)
                 if (t->type == T_IDENTIFIER_STRUCT)
                     t->type = T_IDENTIFIER_FUNCTION;
             }
-            listAdd(tokens, fileSpanIntToken(T_PUNCTUATION_BRACKET_OPEN, nest, span), Token);
-            freeFileSpan(span);
+            listAdd(tokens, tokenFileSpanInt(T_PUNCTUATION_BRACKET_OPEN, nest, span), Token);
+            fsFree(span);
             nest++;
             continue;
         // ] is always token by itself
@@ -118,12 +118,12 @@ List lex(FILE* in, List* errors)
             }
             if (nest == 0)
             {
-                listAdd(errs, createErrorSpan(E_ERROR, span, "missing [ before ]", "add opening bracket somwhere before this closing one"), ErrorSpan)
+                listAdd(errs, errCreateErrorSpan(E_ERROR, span, "missing [ before ]", "add opening bracket somwhere before this closing one"), ErrorSpan)
                 continue;
             }
             nest--;
-            listAdd(tokens, fileSpanIntToken(T_PUNCTUATION_BRACKET_CLOSE, nest, span), Token);
-            freeFileSpan(span);
+            listAdd(tokens, tokenFileSpanInt(T_PUNCTUATION_BRACKET_CLOSE, nest, span), Token);
+            fsFree(span);
             continue;
         // check for comments (starts with // or /*)
         case '/':
@@ -132,18 +132,18 @@ List lex(FILE* in, List* errors)
             // line comment
             case '/':
                 //listAdd(tokens, fileSpanTokenPart(COMMENT_LINE, span, 2, span.length - 2), Token);
-                freeFileSpan(span);
+                fsFree(span);
                 continue;
             // block comment
             case '*':
                 // check if the block comment is closed
                 if (span.str[span.length - 1] != '/' || span.str[span.length - 2] != '*')
                 {
-                    listAdd(errs, createErrorSpan(E_ERROR, span, "block comment is not closed", "close it with */"), ErrorSpan);
+                    listAdd(errs, errCreateErrorSpan(E_ERROR, span, "block comment is not closed", "close it with */"), ErrorSpan);
                     continue;
                 }
                 //listAdd(tokens, fileSpanTokenPart(COMMENT_BLOCK, span, 2, span.length < 5 ? 0 : span.length - 4), Token);
-                freeFileSpan(span);
+                fsFree(span);
                 continue;
             default:
                 break;
@@ -154,36 +154,36 @@ List lex(FILE* in, List* errors)
             // check if the string literal is ended
             if (span.length == 1 || span.str[span.length - 1] != '"')
             {
-                listAdd(errs, createErrorSpan(E_ERROR, span, "string literal is not closed", "try adding closing \""), ErrorSpan);
+                listAdd(errs, errCreateErrorSpan(E_ERROR, span, "string literal is not closed", "try adding closing \""), ErrorSpan);
                 continue;
             }
-            listAdd(tokens, fileSpanTokenPart(T_LITERAL_STRING, span, 1, span.length - 2), Token);
-            freeFileSpan(span);
+            listAdd(tokens, tokenFileSpanPart(T_LITERAL_STRING, span, 1, span.length - 2), Token);
+            fsFree(span);
             continue;
         // char literal
         case '\'':
             // check if the char literal has only one character
             if (span.length != 3)
             {
-                listAdd(errs, createErrorSpan(E_ERROR, span, "char literal can only contain one character", "maybe you want to use string (\")"), ErrorSpan);
+                listAdd(errs, errCreateErrorSpan(E_ERROR, span, "char literal can only contain one character", "maybe you want to use string (\")"), ErrorSpan);
                 continue;
             }
             // check if the char literal is closed
             else if (span.str[3] != '\'')
             {
-                listAdd(errs, createErrorSpan(E_ERROR, span, "char literal is not closed", "try adding closing '"), ErrorSpan);
+                listAdd(errs, errCreateErrorSpan(E_ERROR, span, "char literal is not closed", "try adding closing '"), ErrorSpan);
                 continue;
             }
-            listAdd(tokens, fileSpanCharToken(T_LITERAL_CHAR, span.str[1], span), Token);
-            freeFileSpan(span);
+            listAdd(tokens, tokenFileSpanChar(T_LITERAL_CHAR, span.str[1], span), Token);
+            fsFree(span);
             continue;
         // nothing operator
         case '_':
             // check if it is only the operator
             if (span.length != 1)
                 break;
-            listAdd(tokens, fileSpanTokenPos(T_OPERATOR_NOTHING, span), Token);
-            freeFileSpan(span);
+            listAdd(tokens, tokenFileSpanPos(T_OPERATOR_NOTHING, span), Token);
+            fsFree(span);
             continue;
         default:
             break;
@@ -196,16 +196,16 @@ List lex(FILE* in, List* errors)
             // check for negative values
             _Bool isNegative = *c == '-';
             // read whole part values
-            long long num = _readInt(c + isNegative, &c, 10, &overflow);
+            long long num = _lexReadInt(c + isNegative, &c, 10, &overflow);
             switch (*c)
             {
             // if it doesn't continue, it is integer
             case 0:
-                listAdd(tokens, fileSpanIntToken(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
+                listAdd(tokens, tokenFileSpanInt(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
                 if (overflow)
-                    listAdd(errs, createErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
+                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
                 else
-                    freeFileSpan(span);
+                    fsFree(span);
                 continue;
             // if there is . read decimal values
             case '.':
@@ -226,70 +226,70 @@ List lex(FILE* in, List* errors)
                 // if this is not end break into error
                 if (*c)
                     break;
-                listAdd(tokens, fileSpanDecToken(T_LITERAL_FLOAT, isNegative ? -decimal : decimal, span), Token);
+                listAdd(tokens, tokenFileSpanDec(T_LITERAL_FLOAT, isNegative ? -decimal : decimal, span), Token);
                 // check for too large or precise numbers
                 if (isinf(decimal))
-                    listAdd(errs, createErrorSpan(E_WARNING, span, "number is too large and will be trated as infinity", "use different type (string?)"), ErrorSpan) // there shouldn't be ;
-                else if (digits > DECIMAL_WARNING_LIMIT)
-                    listAdd(errs, createErrorSpan(E_WARNING, span, "number has too many digits and may be rounded", "if you want all the digits maybe use string"), ErrorSpan) // there shouldn't be ;
+                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large and will be trated as infinity", "use different type (string?)"), ErrorSpan) // there shouldn't be ;
+                else if (digits > lex_DECIMAL_WARNING_LIMIT)
+                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number has too many digits and may be rounded", "if you want all the digits maybe use string"), ErrorSpan) // there shouldn't be ;
                 else
-                    freeFileSpan(span);
+                    fsFree(span);
                 continue;
             }
             // reading hexadecimal numbers
             case 'x':
-                num = _readInt(c + 1, &c, 16, &overflow);
+                num = _lexReadInt(c + 1, &c, 16, &overflow);
                 if (*c)
                     break;
-                listAdd(tokens, fileSpanIntToken(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
+                listAdd(tokens, tokenFileSpanInt(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
                 if (overflow)
-                    listAdd(errs, createErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
-                        else freeFileSpan(span);
+                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
+                        else fsFree(span);
                 continue;
             // reading binary numbers
             case 'b':
-                num = _readInt(c + 1, &c, 2, &overflow);
+                num = _lexReadInt(c + 1, &c, 2, &overflow);
                 if (*c)
                     break;
-                listAdd(tokens, fileSpanIntToken(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
+                listAdd(tokens, tokenFileSpanInt(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
                 if (overflow)
-                    listAdd(errs, createErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
-                        else freeFileSpan(span);
+                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
+                        else fsFree(span);
                 continue;
             // reding numbers with the specified base
             case 'z':
                 if (num < 2 || num > 36)
                 {
-                    listAdd(errs, createErrorSpan(E_ERROR, span, "base must be between 2 and 36 (inclusive)", "change the number before z to be in that range"), ErrorSpan);
+                    listAdd(errs, errCreateErrorSpan(E_ERROR, span, "base must be between 2 and 36 (inclusive)", "change the number before z to be in that range"), ErrorSpan);
                     continue;
                 }
-                num = _readInt(c + 1, &c, num, &overflow);
+                num = _lexReadInt(c + 1, &c, num, &overflow);
                 if (*c)
                     break;
-                listAdd(tokens, fileSpanIntToken(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
+                listAdd(tokens, tokenFileSpanInt(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
                 if (overflow)
-                    listAdd(errs, createErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
-                        else freeFileSpan(span);
+                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
+                        else fsFree(span);
                 continue;
             // otherwise break into error
             default:
                 break;
             }
-            listAdd(errs, createErrorSpan(E_ERROR, span, "invalid number literal", "number literals cannot contain other characters than digits and single ."), ErrorSpan);
+            listAdd(errs, errCreateErrorSpan(E_ERROR, span, "invalid number literal", "number literals cannot contain other characters than digits and single ."), ErrorSpan);
             continue;
         }
 
         // tokens that are not enclosed in [] are incorrect
         if (nest == 0)
         {
-            listAdd(errs, createErrorSpan(E_ERROR, span, "cannot use identifiers directly", "try ecapsulating it in []"), ErrorSpan);
+            listAdd(errs, errCreateErrorSpan(E_ERROR, span, "cannot use identifiers directly", "try ecapsulating it in []"), ErrorSpan);
             continue;
         }
 
-#define __checkKeyword(__kws, __kwe) if(_checkKeyword(__kws,__kwe,span,&tokens,&errs))continue
+#define __lexCheckKeyword(__kws, __kwe) if(_lexCheckKeyword(__kws,__kwe,span,&tokens,&errs))continue
         // check for the keywords
-        __checkKeyword("set", T_KEYWORD_SET);
-        switch (_checkKeyword("struct", T_KEYWORD_STRUCT, span, &tokens, &errs))
+        __lexCheckKeyword("set", T_KEYWORD_SET);
+        switch (_lexCheckKeyword("struct", T_KEYWORD_STRUCT, span, &tokens, &errs))
         {
         case 0:
             break;
@@ -300,7 +300,7 @@ List lex(FILE* in, List* errors)
         default:
             continue;
         }
-        switch (_checkKeyword("sign", T_KEYWORD_SIGN, span, &tokens, &errs))
+        switch (_lexCheckKeyword("sign", T_KEYWORD_SIGN, span, &tokens, &errs))
         {
         case 0:
             break;
@@ -311,7 +311,7 @@ List lex(FILE* in, List* errors)
         default:
             continue;
         }
-        switch (_checkKeyword("def", T_KEYWORD_DEF, span, &tokens, &errs))
+        switch (_lexCheckKeyword("def", T_KEYWORD_DEF, span, &tokens, &errs))
         {
         case 0:
             break;
@@ -326,12 +326,12 @@ List lex(FILE* in, List* errors)
 
         if (strcmp(span.str, "true") == 0)
         {
-            listAdd(tokens, fileSpanBoolToken(T_LITERAL_BOOL, 1, span), Token);
+            listAdd(tokens, tokenFileSpanBool(T_LITERAL_BOOL, 1, span), Token);
             continue;
         }
         if (strcmp(span.str, "false") == 0)
         {
-            listAdd(tokens, fileSpanBoolToken(T_LITERAL_BOOL, 0, span), Token);
+            listAdd(tokens, tokenFileSpanBool(T_LITERAL_BOOL, 0, span), Token);
             continue;
         }
 
@@ -343,15 +343,15 @@ List lex(FILE* in, List* errors)
                 if (t->type == T_IDENTIFIER_STRUCT)
                     t->type = T_IDENTIFIER_VARIABLE;
             }
-#define __checkStorage(__str, __tpe) if(strcmp(span.str, __str) == 0){Token __t=fileSpanTokenPos(__tpe, span);listAddP(&tokens, &__t);continue;}
-            __checkStorage("*", T_STORAGE_POINTER);
-            __checkStorage("char", T_STORAGE_CHAR);
-            __checkStorage("string", T_STORAGE_STRING);
-            __checkStorage("int", T_STORAGE_INT);
-            __checkStorage("float", T_STORAGE_FLOAT);
-            __checkStorage("bool", T_STORAGE_BOOL);
+#define __lexCheckStorage(__str, __tpe) if(strcmp(span.str, __str) == 0){Token __t=tokenFileSpanPos(__tpe, span);listAddP(&tokens, &__t);continue;}
+            __lexCheckStorage("*", T_STORAGE_POINTER);
+            __lexCheckStorage("char", T_STORAGE_CHAR);
+            __lexCheckStorage("string", T_STORAGE_STRING);
+            __lexCheckStorage("int", T_STORAGE_INT);
+            __lexCheckStorage("float", T_STORAGE_FLOAT);
+            __lexCheckStorage("bool", T_STORAGE_BOOL);
 #undef __checkStorage
-            listAdd(tokens, fileSpanToken(T_IDENTIFIER_STRUCT, span), Token);
+            listAdd(tokens, tokenFileSpan(T_IDENTIFIER_STRUCT, span), Token);
             continue;
         }
 
@@ -359,10 +359,10 @@ List lex(FILE* in, List* errors)
         {
             if (parm > nest && listGet(tokens, tokens.length - 1, Token).type == T_PUNCTUATION_BRACKET_OPEN)
             {
-                listAdd(tokens, fileSpanToken(T_IDENTIFIER_STRUCT, span), Token);
+                listAdd(tokens, tokenFileSpan(T_IDENTIFIER_STRUCT, span), Token);
                 continue;
             }
-            listAdd(tokens, fileSpanToken(T_IDENTIFIER_PARAMETER, span), Token);
+            listAdd(tokens, tokenFileSpan(T_IDENTIFIER_PARAMETER, span), Token);
             continue;
         }
 
@@ -370,24 +370,24 @@ List lex(FILE* in, List* errors)
         {
             if (strc == nest)
             {
-                listAdd(tokens, fileSpanToken(T_IDENTIFIER_STRUCT, span), Token);
+                listAdd(tokens, tokenFileSpan(T_IDENTIFIER_STRUCT, span), Token);
                 continue;
             }
             switch (listGet(tokens, tokens.length - 1, Token).type)
             {
             case T_PUNCTUATION_BRACKET_OPEN:
-#define __checkStorage(__str, __tpe) if(strcmp(span.str, __str) == 0){Token __t=fileSpanTokenPos(__tpe, span);listAddP(&tokens, &__t);continue;}
-                __checkStorage("*", T_STORAGE_POINTER);
-                __checkStorage("char", T_STORAGE_CHAR);
-                __checkStorage("string", T_STORAGE_STRING);
-                __checkStorage("int", T_STORAGE_INT);
-                __checkStorage("float", T_STORAGE_FLOAT);
-                __checkStorage("bool", T_STORAGE_BOOL);
+#define __checkStorage(__str, __tpe) if(strcmp(span.str, __str) == 0){Token __t=tokenFileSpanPos(__tpe, span);listAddP(&tokens, &__t);continue;}
+                __lexCheckStorage("*", T_STORAGE_POINTER);
+                __lexCheckStorage("char", T_STORAGE_CHAR);
+                __lexCheckStorage("string", T_STORAGE_STRING);
+                __lexCheckStorage("int", T_STORAGE_INT);
+                __lexCheckStorage("float", T_STORAGE_FLOAT);
+                __lexCheckStorage("bool", T_STORAGE_BOOL);
 #undef __checkStorage
-                listAdd(tokens, fileSpanToken(T_IDENTIFIER_STRUCT, span), Token);
+                listAdd(tokens, tokenFileSpan(T_IDENTIFIER_STRUCT, span), Token);
                 continue;
             default:
-                listAdd(tokens, fileSpanToken(T_IDENTIFIER_PARAMETER, span), Token);
+                listAdd(tokens, tokenFileSpan(T_IDENTIFIER_PARAMETER, span), Token);
                 continue;
             }
         }
@@ -397,33 +397,33 @@ List lex(FILE* in, List* errors)
         {
         // tokens directly after [ are function identifiers
         case T_PUNCTUATION_BRACKET_OPEN:
-            listAdd(tokens, fileSpanToken(T_IDENTIFIER_FUNCTION, span), Token);
+            listAdd(tokens, tokenFileSpan(T_IDENTIFIER_FUNCTION, span), Token);
             continue;
         // other tokens are just variable identifiers
         default:
-            listAdd(tokens, fileSpanToken(T_IDENTIFIER_VARIABLE, span), Token);
+            listAdd(tokens, tokenFileSpan(T_IDENTIFIER_VARIABLE, span), Token);
             continue;
         }
     }
 
     if (nest > 0)
-        listAdd(errs, createErrorSpan(E_ERROR, copyFileSpanFrom("]", 1, 
+        listAdd(errs, errCreateErrorSpan(E_ERROR, fsCopyFrom("]", 1, 
             listGet(list, list.length - 1, FileSpan).line, 
             listGet(list, list.length - 1, FileSpan).col
             ), "missing 1 or more closing brackets", "try adding ]"), ErrorSpan);
 
     // free the list of strings
-    freeList(list);
+    listFree(list);
     // if errors is not null set them, otherwise free them
     if (errors)
         *errors = errs;
     else
-        listDeepFree(list, ErrorSpan, t, freeErrorSpan(t));
+        listDeepFree(list, ErrorSpan, t, errFreeErrorSpan(t));
 
     return tokens;
 }
 
-long long _getDigit(char digit)
+long long _lexGetDigit(char digit)
 {
     if (digit < '0')
         return 37;
@@ -438,7 +438,7 @@ long long _getDigit(char digit)
     return digit - 'a' + 10;
 }
 
-long long _readInt(char* str, char** endptr, long long base, _Bool* overflow)
+long long _lexReadInt(char* str, char** endptr, long long base, _Bool* overflow)
 {
     assert(str);
     assert(base <= 36 && base >= 2);
@@ -446,7 +446,7 @@ long long _readInt(char* str, char** endptr, long long base, _Bool* overflow)
     long long num = 0;
     long long digit;
     _Bool ovfl = 0;
-    for (; *str && (digit = _getDigit(*str)) < base; str++)
+    for (; *str && (digit = _lexGetDigit(*str)) < base; str++)
     {
         if (num > LLONG_MAX / base || (num == LLONG_MAX / base && digit > LLONG_MAX % base))
             ovfl = 1;
@@ -459,7 +459,7 @@ long long _readInt(char* str, char** endptr, long long base, _Bool* overflow)
     return num;
 }
 
-int _checkKeyword(const char* kw, T_TokenType type, FileSpan span, List* tokens, List* errors)
+int _lexCheckKeyword(const char* kw, T_TokenType type, FileSpan span, List* tokens, List* errors)
 {
     assert(kw);
     assert(tokens);
@@ -469,25 +469,25 @@ int _checkKeyword(const char* kw, T_TokenType type, FileSpan span, List* tokens,
     {
         if (listGet(*tokens, tokens->length - 1, Token).type != T_PUNCTUATION_BRACKET_OPEN)
         {
-            ErrorSpan t = createErrorSpan(E_ERROR, span, "keyword must be used as function", "try encapsulating the action in []");
+            ErrorSpan t = errCreateErrorSpan(E_ERROR, span, "keyword must be used as function", "try encapsulating the action in []");
             listAddP(errors, &t);
             return -1;
         }
-        Token t = fileSpanTokenPos(type, span);
+        Token t = tokenFileSpanPos(type, span);
         listAddP(tokens, &t);
         return 1;
     }
     return 0;
 }
 
-List _tokenize(FILE* in)
+List _lexTokenize(FILE* in)
 {
     assert(in);
-    _Static_assert(LEXER_READ_BUFFER_SIZE > 1, "_tokenize: minimum LEXER_READ_BUFFER_SIZE is 2");
+    _Static_assert(lex_LEXER_READ_BUFFER_SIZE > 1, "_tokenize: minimum LEXER_READ_BUFFER_SIZE is 2");
 
-    List list = newList(FileSpan);
+    List list = listNew(FileSpan);
 
-    char buffer[LEXER_READ_BUFFER_SIZE];
+    char buffer[lex_LEXER_READ_BUFFER_SIZE];
     size_t pos = 0;
 
     // tracking position in file
@@ -507,7 +507,7 @@ List _tokenize(FILE* in)
         case '\n':
             if (pos != 0)
             {
-                listAdd(list, copyFileSpanFrom(buffer, pos, line, col - pos), FileSpan);
+                listAdd(list, fsCopyFrom(buffer, pos, line, col - pos), FileSpan);
                 pos = 0;
             }
             line++;
@@ -519,7 +519,7 @@ List _tokenize(FILE* in)
         case '\r':
             if (pos == 0)
                 continue;
-            listAdd(list, copyFileSpanFrom(buffer, pos, line, col - pos), FileSpan);
+            listAdd(list, fsCopyFrom(buffer, pos, line, col - pos), FileSpan);
             pos = 0;
             continue;
         // brackets are always token by them self
@@ -528,13 +528,13 @@ List _tokenize(FILE* in)
             // end any currently readed token
             if (pos != 0)
             {
-                listAdd(list, copyFileSpanFrom(buffer, pos, line, col - pos), FileSpan);
+                listAdd(list, fsCopyFrom(buffer, pos, line, col - pos), FileSpan);
                 pos = 0;
             }
             // read the bracket
             {
                 char character = chr;
-                listAdd(list, copyFileSpanFrom(&character, 1, line, col), FileSpan);
+                listAdd(list, fsCopyFrom(&character, 1, line, col), FileSpan);
             }
             continue;
         // strings and chars are in single or double quotes
@@ -543,8 +543,8 @@ List _tokenize(FILE* in)
             // if this is not first char of token, it is not string / char literal
             if (pos != 0)
             {
-                if (pos >= LEXER_READ_BUFFER_SIZE)
-                    except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
+                if (pos >= lex_LEXER_READ_BUFFER_SIZE)
+                    dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
                 buffer[pos] = chr;
                 pos++;
                 continue;
@@ -555,8 +555,8 @@ List _tokenize(FILE* in)
                 size_t qLine = line;
                 size_t qCol = col;
                 // read the text (keep track of the position in file       v      v)
-                pos = _readQuote(in, buffer, LEXER_READ_BUFFER_SIZE, chr, &line, &col);
-                listAdd(list, copyFileSpanFrom(buffer, pos, qLine, qCol), FileSpan);
+                pos = _lexReadQuote(in, buffer, lex_LEXER_READ_BUFFER_SIZE, chr, &line, &col);
+                listAdd(list, fsCopyFrom(buffer, pos, qLine, qCol), FileSpan);
                 pos = 0;
             }
             continue;
@@ -565,15 +565,15 @@ List _tokenize(FILE* in)
             // continue reading if there are not two /
             if (pos == 0 || buffer[pos - 1] != '/')
             {
-                if (pos >= LEXER_READ_BUFFER_SIZE)
-                    except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
+                if (pos >= lex_LEXER_READ_BUFFER_SIZE)
+                    dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
                 buffer[pos] = '/';
                 pos++;
                 continue;
             }
             // comments immidietly end the token, the / is not part of the token
             if (pos > 1)
-                listAdd(list, copyFileSpanFrom(buffer, pos - 1, line, col - pos), FileSpan);
+                listAdd(list, fsCopyFrom(buffer, pos - 1, line, col - pos), FileSpan);
             // read the comment with the //
             pos = 2;
             buffer[0] = '/';
@@ -585,14 +585,14 @@ List _tokenize(FILE* in)
                 // newline ends the line comment
                 if (chr == '\n')
                 {
-                    listAdd(list, copyFileSpanFrom(buffer, pos, line, col - pos), FileSpan);
+                    listAdd(list, fsCopyFrom(buffer, pos, line, col - pos), FileSpan);
                     pos = 0;
                     line++;
                     col = 0;
                     break;
                 }
-                if (pos >= LEXER_READ_BUFFER_SIZE)
-                    except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
+                if (pos >= lex_LEXER_READ_BUFFER_SIZE)
+                    dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
                 buffer[pos] = chr;
                 pos++;
             }
@@ -602,15 +602,15 @@ List _tokenize(FILE* in)
             // checking for the begginging of the comment
             if (pos == 0 || buffer[pos - 1] != '/')
             {
-                if (pos >= LEXER_READ_BUFFER_SIZE)
-                    except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
+                if (pos >= lex_LEXER_READ_BUFFER_SIZE)
+                    dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
                 buffer[pos] = '*';
                 pos++;
                 continue;
             }
             // comments immidietly end any previous token (/ is not part of the token)
             if (pos > 1)
-                listAdd(list, copyFileSpanFrom(buffer, pos - 1, line, col - pos), FileSpan);
+                listAdd(list, fsCopyFrom(buffer, pos - 1, line, col - pos), FileSpan);
             // read the comment with the /*
             pos = 2;
             buffer[0] = '/';
@@ -628,14 +628,14 @@ List _tokenize(FILE* in)
                         line++;
                         col = 0;
                     }
-                    if (pos >= LEXER_READ_BUFFER_SIZE)
-                        except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
+                    if (pos >= lex_LEXER_READ_BUFFER_SIZE)
+                        dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
                     buffer[pos] = chr;
                     pos++;
                     // check for the */ that ends the comment
                     if (chr == '/' && buffer[pos - 2] == '*')
                     {
-                        listAdd(list, copyFileSpanFrom(buffer, pos, comLine, comCol), FileSpan);
+                        listAdd(list, fsCopyFrom(buffer, pos, comLine, comCol), FileSpan);
                         pos = 0;
                         break;
                     }
@@ -644,8 +644,8 @@ List _tokenize(FILE* in)
             continue;
         // read any nonspecial characters
         default:
-            if (pos >= LEXER_READ_BUFFER_SIZE)
-                except("_tokenize: token is too long, max size is %zu", LEXER_READ_BUFFER_SIZE);
+            if (pos >= lex_LEXER_READ_BUFFER_SIZE)
+                dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
             buffer[pos] = chr;
             pos++;
             continue;
@@ -653,11 +653,11 @@ List _tokenize(FILE* in)
     }
     // if file ends, read the last readed token
     if (pos != 0)
-        listAdd(list, copyFileSpanFrom(buffer, pos, line, col - pos), FileSpan);
+        listAdd(list, fsCopyFrom(buffer, pos, line, col - pos), FileSpan);
     return list;
 }
 
-size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size_t* line, size_t* col)
+size_t _lexReadQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size_t* line, size_t* col)
 {
     assert(in);
     assert(buffer);
@@ -676,7 +676,7 @@ size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size
         (*col)++;
         pos++;
         if (pos >= bufferSize)
-            except("_readQuote: quoted token is too long, max size is %zu", bufferSize);
+            dtExcept("_readQuote: quoted token is too long, max size is %zu", bufferSize);
         
         buffer[pos] = chr;
 
@@ -735,15 +735,15 @@ size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size
                 buffer[pos] = 'x';
                 pos++;
                 if (pos >= bufferSize)
-                    except("_readQuote: :%zu:%zu: quoted token is too long, max size is %zu", *line, *col, bufferSize);
+                    dtExcept("_readQuote: :%zu:%zu: quoted token is too long, max size is %zu", *line, *col, bufferSize);
                 buffer[pos] = buf[0];
                 return pos + 1;
             }
             buf[1] = chr;
             char* end;
-            buffer[pos] = _readInt(buf, &end, 16, NULL);
+            buffer[pos] = _lexReadInt(buf, &end, 16, NULL);
             if (*end)
-                except("_readQuote: :%zu:%zu: inavlid escape sequence", *line, *col);
+                dtExcept("_readQuote: :%zu:%zu: inavlid escape sequence", *line, *col);
             break;
         }
         // any other character after \ will be readed literaly (\\, \")

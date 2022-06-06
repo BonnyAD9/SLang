@@ -6,6 +6,8 @@
         "stdlib.h": "c",
         "type_traits": "c",
         "assert.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "algorithm": "c",
+        "cmath": "c"
     }
 }

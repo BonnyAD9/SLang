@@ -6,21 +6,21 @@
 #include "List.h"
 #include "Runtime.h"
 
-void registerBuiltins(Runtime* r)
+void bifRegisterBuiltins(Runtime* r)
 {
-    listAdd(r->variables, createFunctionVariable(strLit("print"), createFunction(print, newList(String))), Variable);
-    listAdd(r->variables, createFunctionVariable(strLit("println"), createFunction(println, newList(String))), Variable);
+    listAdd(r->variables, rtCreateFunctionVariable(strLit("print"), rtCreateFunction(bifPrint, listNew(String))), Variable);
+    listAdd(r->variables, rtCreateFunctionVariable(strLit("println"), rtCreateFunction(bifPrintln, listNew(String))), Variable);
 }
 
-Variable println(Function f, Runtime* r, List par)
+Variable bifPrintln(Function f, Runtime* r, List par)
 {
     assert(r);
-    Variable ret = print(f, r, par);
+    Variable ret = bifPrint(f, r, par);
     printf("\n");
     return ret;
 }
 
-Variable print(Function f, Runtime* r, List par)
+Variable bifPrint(Function f, Runtime* r, List par)
 {
     ListIterator iterator = liCreate(&par);
     ListIterator* li = &iterator;
@@ -62,8 +62,8 @@ Variable print(Function f, Runtime* r, List par)
             printf("<error>");
             break;
         }
-        freeVariable(v);
+        rtFreeVariable(v);
     }
-    freeList(par);
-    return createNothingVariable();
+    listFree(par);
+    return rtCreateNothingVariable();
 }

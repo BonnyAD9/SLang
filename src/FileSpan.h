@@ -1,5 +1,5 @@
-#ifndef STR_SPAN_INCLUDED
-#define STR_SPAN_INCLUDED
+#ifndef fs_FILE_SPAN_INCLUDED
+#define fs_FILE_SPAN_INCLUDED
 
 #include <stdlib.h>
 
@@ -20,13 +20,13 @@ typedef struct FileSpan
  * @param col column in file
  * @return FileSpan new instance
  */
-FileSpan copyFileSpanFrom(const char* buffer, size_t length, size_t line, size_t col);
+FileSpan fsCopyFrom(const char* buffer, size_t length, size_t line, size_t col);
 
 /**
  * @brief frees this instance of file span
  * 
  * @param span span to free
  */
-void freeFileSpan(FileSpan span);
+void fsFree(FileSpan span);
 
-#endif // STR_SPAN_INCLUDED
+#endif // fs_FILE_SPAN_INCLUDED
