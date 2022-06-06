@@ -33,6 +33,10 @@ Hello World
 ## Builtin functions
 - `print` prints its arguments to the screen
 - `println` prints its arguments to the screen and appends newline
+- `+` sums variable number of arguments of type bool, int or float
+- `-` negates single argument or subtracts second argument from the first (works with bool, int and float)
+- `*` multiplies variable number of arguments of type bool, int or float
+- `%` performs a modulo with two int arguments
 
 ## Comments
 - use `//` for line comments
