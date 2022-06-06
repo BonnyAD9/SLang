@@ -2,7 +2,6 @@
 #define STRING_LIST_INCLUDED
 
 #include <stdlib.h>
-#include <stdbool.h>
 
 #include "FileSpan.h"
 
@@ -103,7 +102,7 @@ void* liGetP(ListIterator* iterator);
  * @return true moved successfully
  * @return false moved unsuccessfully
  */
-bool liMove(ListIterator* iterator);
+_Bool liMove(ListIterator* iterator);
 
 /**
  * @brief returns value indicating whether the iterator reached end
@@ -112,7 +111,7 @@ bool liMove(ListIterator* iterator);
  * @return true did not reach end
  * @return false did reach end
  */
-bool liCan(ListIterator* iterator);
+_Bool liCan(ListIterator* iterator);
 
 /**
  * @brief adds element to the end of the list and moves the position there

@@ -2,7 +2,6 @@
 #define PARSER_TREE_INCLUDED
 
 #include <stdlib.h>
-#include <stdbool.h>
 #include <stdio.h>
 
 #include "Token.h"
@@ -91,7 +90,7 @@ ParserNode createParserNode(ParserNodeType type);
  * @param node node to free
  * @param recursive indicates whether to free all childs
  */
-void freeParserNode(ParserNode node, bool recursive);
+void freeParserNode(ParserNode node, _Bool recursive);
 
 /**
  * @brief adds node to parser tree

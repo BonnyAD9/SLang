@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include <assert.h>
 
 String strEmpty()
@@ -47,16 +46,16 @@ String strCLen(const char* str, size_t length)
     return s;
 }
 
-bool strEquals(String str1, String str2)
+_Bool strEquals(String str1, String str2)
 {
     if (str1.length != str2.length)
-        return false;
+        return 0;
     return strcmp(str1.data, str2.data) == 0;
 }
 
-bool strEqualsC(String str1, const char* str2, size_t str2Length)
+_Bool strEqualsC(String str1, const char* str2, size_t str2Length)
 {
     if (str1.length != str2Length)
-        return false;
+        return 1;
     return strcmp(str1.data, str2) == 0;
 }

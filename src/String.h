@@ -2,7 +2,6 @@
 #define STRING_INCLUDED
 
 #include <stdlib.h>
-#include <stdbool.h>
 
 #define strEqualsLit(__string, __literal) strEqualsC(__string, __literal, sizeof(__literal) - 1)
 #define strLit(__literal) strCLen(__literal, sizeof(__literal) - 1)
@@ -60,7 +59,7 @@ String strCLen(const char* str, size_t len);
  * @return true strings are equal
  * @return false strings are not equal
  */
-bool strEquals(String str1, String str2);
+_Bool strEquals(String str1, String str2);
 
 /**
  * @brief compares string and C string
@@ -71,6 +70,6 @@ bool strEquals(String str1, String str2);
  * @return true strings are same
  * @return false strings are not same
  */
-bool strEqualsC(String str1, const char* str2, size_t str2Length);
+_Bool strEqualsC(String str1, const char* str2, size_t str2Length);
 
 #endif

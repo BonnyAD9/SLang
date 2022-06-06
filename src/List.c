@@ -65,13 +65,13 @@ void* liGetP(ListIterator* iterator)
     return listGetP(*iterator->list, iterator->pos);
 }
 
-bool liMove(ListIterator* iterator)
+_Bool liMove(ListIterator* iterator)
 {
     iterator->pos++;
     return iterator->pos < iterator->list->length;
 }
 
-bool liCan(ListIterator* iterator)
+_Bool liCan(ListIterator* iterator)
 {
     return iterator->pos < iterator->list->length;
 }

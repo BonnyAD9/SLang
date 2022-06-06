@@ -1,7 +1,6 @@
 #include "Lexer.h"
 
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
@@ -44,7 +43,7 @@ size_t _readQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size
  * @param overflow this is set to true if the integer overflows the long long limit
  * @return long readed integer
  */
-long long _readInt(char* str, char** endptr, long long base, bool* overflow);
+long long _readInt(char* str, char** endptr, long long base, _Bool* overflow);
 
 /**
  * @brief checks the keyword and adds it to the list
@@ -193,9 +192,9 @@ List lex(FILE* in, List* errors)
         if (isdigit(span.str[0]) || (span.str[0] == '-' && isdigit(span.str[1])))
         {
             char* c = span.str;
-            bool overflow = false;
+            _Bool overflow = 0;
             // check for negative values
-            bool isNegative = *c == '-';
+            _Bool isNegative = *c == '-';
             // read whole part values
             long long num = _readInt(c + isNegative, &c, 10, &overflow);
             switch (*c)
@@ -327,12 +326,12 @@ List lex(FILE* in, List* errors)
 
         if (strcmp(span.str, "true") == 0)
         {
-            listAdd(tokens, fileSpanBoolToken(T_LITERAL_BOOL, true, span), Token);
+            listAdd(tokens, fileSpanBoolToken(T_LITERAL_BOOL, 1, span), Token);
             continue;
         }
         if (strcmp(span.str, "false") == 0)
         {
-            listAdd(tokens, fileSpanBoolToken(T_LITERAL_BOOL, false, span), Token);
+            listAdd(tokens, fileSpanBoolToken(T_LITERAL_BOOL, 0, span), Token);
             continue;
         }
 
@@ -439,18 +438,18 @@ long long _getDigit(char digit)
     return digit - 'a' + 10;
 }
 
-long long _readInt(char* str, char** endptr, long long base, bool* overflow)
+long long _readInt(char* str, char** endptr, long long base, _Bool* overflow)
 {
     assert(str);
     assert(base <= 36 && base >= 2);
 
     long long num = 0;
     long long digit;
-    bool ovfl = false;
+    _Bool ovfl = 0;
     for (; *str && (digit = _getDigit(*str)) < base; str++)
     {
         if (num > LLONG_MAX / base || (num == LLONG_MAX / base && digit > LLONG_MAX % base))
-            ovfl = true;
+            ovfl = 1;
         num = num * base + digit;
     }
     if (endptr)
@@ -472,13 +471,13 @@ int _checkKeyword(const char* kw, T_TokenType type, FileSpan span, List* tokens,
         {
             ErrorSpan t = createErrorSpan(E_ERROR, span, "keyword must be used as function", "try encapsulating the action in []");
             listAddP(errors, &t);
-            return true;
+            return -1;
         }
         Token t = fileSpanTokenPos(type, span);
         listAddP(tokens, &t);
-        return true;
+        return 1;
     }
-    return false;
+    return 0;
 }
 
 List _tokenize(FILE* in)

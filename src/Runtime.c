@@ -40,7 +40,7 @@ void freeFunction(Function f)
     listDeepFree(f.parameters, String, s, strFree(s));
 }
 
-Variable createBoolVariable(String name, bool value)
+Variable createBoolVariable(String name, _Bool value)
 {
     Variable v =
     {
@@ -124,7 +124,7 @@ Variable copyVariable(String name, Variable var)
         return createFunctionVariable(name, var.function);*/
     default:
         except("copyVariable: invalid variable type");
-        return createBoolVariable(strEmpty(), false);
+        return createBoolVariable(strEmpty(), 0);
     }
 }
 
@@ -153,7 +153,7 @@ Variable createNothingVariable()
     return v;
 }
 
-bool runtimeGet(Runtime* r, String name, Variable* v)
+_Bool runtimeGet(Runtime* r, String name, Variable* v)
 {
     ListIterator li = liCreate(&r->variables);
     while (liCan(&li))
@@ -163,13 +163,13 @@ bool runtimeGet(Runtime* r, String name, Variable* v)
         if (strEquals(var.name, name))
         {
             *v = var;
-            return true;
+            return 1;
         }
     }
-    return false;
+    return 0;
 }
 
-Variable boolVariable(bool value)
+Variable boolVariable(_Bool value)
 {
     return createBoolVariable(strEmpty(), value);
 }

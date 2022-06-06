@@ -2,7 +2,6 @@
 #define TOKEN_INCLUDED
 
 #include <stdio.h>
-#include <stdbool.h>
 
 #include "FileSpan.h"
 
@@ -56,7 +55,7 @@ typedef struct Token
         long long integer;
         double decimal;
         char character;
-        bool boolean;
+        _Bool boolean;
     };
 } Token;
 
@@ -114,7 +113,7 @@ Token fileSpanTokenPos(T_TokenType type, FileSpan span);
  * @param span span with position in file
  * @return Token new instance
  */
-Token fileSpanBoolToken(T_TokenType type, bool value, FileSpan span);
+Token fileSpanBoolToken(T_TokenType type, _Bool value, FileSpan span);
 
 /**
  * @brief creates token with int value

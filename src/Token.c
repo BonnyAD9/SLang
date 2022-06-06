@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 #include <assert.h>
 
@@ -110,7 +109,7 @@ Token fileSpanCharToken(T_TokenType type, char value, FileSpan span)
     return characterToken(type, value, span.line, span.col);
 }
 
-Token fileSpanBoolToken(T_TokenType type, bool value, FileSpan span)
+Token fileSpanBoolToken(T_TokenType type, _Bool value, FileSpan span)
 {
     Token t =
     {

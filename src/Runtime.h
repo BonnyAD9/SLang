@@ -40,7 +40,7 @@ struct Variable
     VariableType type;
     union
     {
-        bool boolean;
+        _Bool boolean;
         long long integer;
         double decimal;
         char character;
@@ -64,7 +64,7 @@ Runtime createRuntime(List *errors);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable createBoolVariable(String name, bool value);
+Variable createBoolVariable(String name, _Bool value);
 
 /**
  * @brief Create a Int Variable object
@@ -117,7 +117,7 @@ Variable createFunctionVariable(String name, Function fun);
  * @param value value of the variable
  * @return Variable new instance
  */
-Variable boolVariable(bool value);
+Variable boolVariable(_Bool value);
 
 /**
  * @brief Create a Int Variable object
@@ -225,6 +225,6 @@ Variable invokeFunction(Function f, Runtime* r, List par);
  * @return true variable was found
  * @return false variable was not found
  */
-bool runtimeGet(Runtime* r, String name, Variable* v);
+_Bool runtimeGet(Runtime* r, String name, Variable* v);
 
 #endif // RUNTIME_INCLUDED

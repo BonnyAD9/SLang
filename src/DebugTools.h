@@ -1,8 +1,6 @@
 #ifndef ASSERT_INCLUDED
 #define ASSERT_INCLUDED
 
-#include <stdbool.h>
-
 #ifdef NDEBUG
 
 #define dprintf(msg, ...)
