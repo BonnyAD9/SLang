@@ -11,8 +11,6 @@
 #include "String.h"
 #include "Evaluator.h"
 
-#define mac(__type) __type x
-
 int main(int argc, char** argv)
 {
     if (argc != 2)
