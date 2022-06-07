@@ -4,8 +4,12 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "StringBuilder.h"
+#include "DebugTools.h"
+
+static char buffer[st_BUFFER_SIZE];
 
 typedef struct _StBufferStream
 {
@@ -176,6 +180,39 @@ int stStringBuilderStream(Stream* st, StringBuilder* sb, StreamFlags flags)
     st->close = _stClose;
 
     return 0;
+}
+
+int stVPrintf(Stream* st, const char* format, va_list args)
+{
+    int len = vsprintf_s(buffer, st_BUFFER_SIZE, format, args);
+    return stWrite(st, buffer, len);
+}
+
+int stPrintf(Stream* st, const char* format, ...)
+{
+    va_list l;
+    va_start(l, format);
+
+    int res = stVPrintf(st, format, l);
+
+    va_end(l);
+    return res;
+}
+
+int stVScanf(Stream* st, const char* format, va_list args)
+{
+    dtExcept("stVScanf: not implemented");
+}
+
+int stScanf(Stream* st, const char* format, ...)
+{
+    va_list l;
+    va_start(l, format);
+
+    int res = stVScanf(st, format, l);
+
+    va_end(l);
+    return res;
 }
 
 size_t _stFRead(void* stream, char* buffer, size_t length)

@@ -2,10 +2,15 @@
 #define st_STREAM_INCLUDED
 
 #include <stdio.h>
+#include <stdarg.h>
 
 #include "StringBuilder.h"
 
 #define st_UNSUPPORTED (EOF - 1)
+
+#ifndef st_BUFFER_SIZE
+#define st_BUFFER_SIZE 4096
+#endif // st_BUFFER_SIZE
 
 typedef enum StreamFlags
 {
@@ -143,5 +148,45 @@ int stBufferStream(Stream* st, char* buffer, size_t length, StreamFlags flags);
  * @return int error code (0 on success)
  */
 int stStringBuilderStream(Stream* st, StringBuilder* sb, StreamFlags flags);
+
+/**
+ * @brief prints formatted text into the stream
+ * 
+ * @param st where to print
+ * @param format text format
+ * @param args format arguments
+ * @return int number of written characters
+ */
+int stVPrintf(Stream* st, const char* format, va_list args);
+
+/**
+ * @brief prints formatted text into the stream
+ * 
+ * @param st where to print
+ * @param format print format
+ * @param ... format arguments
+ * @return int number of written characters
+ */
+int stPrintf(Stream* st, const char* format, ...);
+
+/**
+ * @brief throws exception!! reads formatted text from stream
+ * 
+ * @param st where to read from
+ * @param format format of the readed text
+ * @param args arguments
+ * @return int number of readed values
+ */
+int stVScanf(Stream* st, const char* format, va_list args);
+
+/**
+ * @brief throws exception!! reads formatted text from stream
+ * 
+ * @param st where to read from
+ * @param format format of the readed text
+ * @param ... arguments
+ * @return int number of readed values
+ */
+int stScanf(Stream* st, const char* format, ...);
 
 #endif // st_STREAM_INCLUDED
