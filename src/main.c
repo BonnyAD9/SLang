@@ -15,8 +15,6 @@
 
 int main(int argc, char** argv)
 {
-    stPrintf(term_out, "%d + %d = %d", 5, 5, 5 + 5);
-    return EXIT_SUCCESS;
     if (argc != 2)
     {
         printf("Error: invalid number of arguments");
