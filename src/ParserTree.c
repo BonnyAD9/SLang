@@ -47,7 +47,7 @@ void _ptPrintNode(FILE *out, ParserNode node, size_t depth, const char* filename
         break;
     case P_IDENTIFIER:
         fprintf(out, "IDENTIFIER(");
-        tokenPrintPos(out, *node.token, filename);
+        tokenPrint(out, *node.token);
         fprintf(out, ")\n");
         break;
     case P_NOTHING:
@@ -58,27 +58,27 @@ void _ptPrintNode(FILE *out, ParserNode node, size_t depth, const char* filename
         break;
     case P_VALUE_INTEGER:
         fprintf(out, "VALUE_INTEGER(");
-        tokenPrintPos(out, *node.token, filename);
+        tokenPrint(out, *node.token);
         fprintf(out, ")\n");
         break;
     case P_VALUE_FLOAT:
         fprintf(out, "VALUE_FLOAT(");
-        tokenPrintPos(out, *node.token, filename);
+        tokenPrint(out, *node.token);
         fprintf(out, ")\n");
         break;
     case P_VALUE_CHAR:
         fprintf(out, "VALUE_CHAR(");
-        tokenPrintPos(out, *node.token, filename);
+        tokenPrint(out, *node.token);
         fprintf(out, ")\n");
         break;
     case P_VALUE_STRING:
         fprintf(out, "VALUE_STRING(");
-        tokenPrintPos(out, *node.token, filename);
+        tokenPrint(out, *node.token);
         fprintf(out, ")\n");
         break;
     case P_VALUE_BOOL:
         fprintf(out, "VALUE_BOOL(");
-        tokenPrintPos(out, *node.token, filename);
+        tokenPrint(out, *node.token);
         fprintf(out, ")\n");
         break;
     case P_FUNCTION_DEFINITION:
@@ -86,12 +86,12 @@ void _ptPrintNode(FILE *out, ParserNode node, size_t depth, const char* filename
         break;
     case P_VARIABLE_SETTER:
         fprintf(out, "VARIABLE_SETTER(");
-        tokenPrintPos(out, *node.token, filename);
+        tokenPrint(out, *node.token);
         fprintf(out, ")\n");
         break;
     case P_FUNCTION_SETTER:
         fprintf(out, "FUNCTION_SETTER(");
-        tokenPrintPos(out, *node.token, filename);
+        tokenPrint(out, *node.token);
         fprintf(out, ")\n");
         break;
     default:

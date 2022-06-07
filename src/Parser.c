@@ -168,7 +168,7 @@ ParserNode _parFunctionCall(ParserNode function, List* tokens, size_t* i, List* 
             return call;
         }
     }
-    _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected ]", "try adding ]"));
+    _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected ]", "try adding ]"));
     return call;
 }
 
@@ -176,7 +176,7 @@ ParserNode _parEvaluate(List *tokens, size_t *i, List* errors)
 {
     Token t;
     _parNextTokenP(tokens, i, t,
-        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "unexpected end", "add function call"));
+        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "unexpected end", "add function call"));
         return ptCreateNode(P_ERROR);
     );
     switch (t.type)
@@ -205,17 +205,17 @@ ParserNode _parDef(List* tokens, size_t* i, List* errors)
 {
     Token t;
     _parNextTokenP(tokens, i, t,
-        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected function definition", "consider adding function parameters and its body"));
+        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected function definition", "consider adding function parameters and its body"));
         return ptCreateNode(P_ERROR);
     )
     if (t.type != T_PUNCTUATION_BRACKET_OPEN)
     {
-        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected function parameters", "if you don't want any parameters use []"));
+        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected function parameters", "if you don't want any parameters use []"));
         while (t.type != T_PUNCTUATION_BRACKET_CLOSE)
         {
             tokenFree(t);
             _parNextTokenP(tokens, i, t,
-                _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected ]", "consider closing the function body"));
+                _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected ]", "consider closing the function body"));
                 return ptCreateNode(P_ERROR);
             )
         }
@@ -257,7 +257,7 @@ ParserNode _parDef(List* tokens, size_t* i, List* errors)
     }
 
     _parNextTokenP(tokens, i, t,
-        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected ]", "try closing the function body"));
+        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected ]", "try closing the function body"));
         return node;
     )
 
@@ -265,7 +265,7 @@ ParserNode _parDef(List* tokens, size_t* i, List* errors)
     {
         _parErrAddP(errors, errCreateErrorToken(E_ERROR, t, "expected ]", "function body can only contain one statement"));
         _parNextTokenP(tokens, i, t,
-            _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected ]", "try closing the function body"));
+            _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected ]", "try closing the function body"));
             return node;
         )
     }
@@ -282,7 +282,7 @@ ParserNode _parSet(List* tokens, size_t* i, List* errors)
 {
     Token t;
     _parNextTokenP(tokens, i, t,
-        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "unexpected end", "add a variable name"));
+        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "unexpected end", "add a variable name"));
         return ptCreateNode(P_ERROR);
     )
 
@@ -305,14 +305,14 @@ ParserNode _parSet(List* tokens, size_t* i, List* errors)
         set = ptTokenNode(P_VARIABLE_SETTER, t);
         ptNodeAdd(&set, ptCreateNode(P_NOTHING));
         _parNextTokenP(tokens, i, t,
-            _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected ]", "try closing the function body"));
+            _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected ]", "try closing the function body"));
             return ptCreateNode(P_ERROR);
         )
         while (t.type != T_PUNCTUATION_BRACKET_CLOSE)
         {
             _parErrAddP(errors, errCreateErrorToken(E_ERROR, t, "expected ]", "function body can only contain one statement"));
             _parNextTokenP(tokens, i, t,
-                _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected ]", "try closing the function body"));
+                _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected ]", "try closing the function body"));
                 return ptCreateNode(P_ERROR);
             )
         }
@@ -321,14 +321,14 @@ ParserNode _parSet(List* tokens, size_t* i, List* errors)
         set = ptTokenNode(n.type == P_FUNCTION_DEFINITION ? P_FUNCTION_SETTER : P_VARIABLE_SETTER, t);
         ptNodeAdd(&set, n);
         _parNextTokenP(tokens, i, t,
-            _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected ]", "try closing the function body"));
+            _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected ]", "try closing the function body"));
             return ptCreateNode(P_ERROR);
         )
         while (t.type != T_PUNCTUATION_BRACKET_CLOSE)
         {
             _parErrAddP(errors, errCreateErrorToken(E_ERROR, t, "expected ]", "function body can only contain one statement"));
             _parNextTokenP(tokens, i, t,
-                _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected ]", "try closing the function body"));
+                _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected ]", "try closing the function body"));
                 return ptCreateNode(P_ERROR);
             )
         }
@@ -341,7 +341,7 @@ ParserNode _parSet(List* tokens, size_t* i, List* errors)
     {
         _parErrAddP(errors, errCreateErrorToken(E_ERROR, t, "expected ]", "function body can only contain one statement"));
         _parNextTokenP(tokens, i, t,
-            _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected ]", "try closing the function body"));
+            _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected ]", "try closing the function body"));
             return ptCreateNode(P_ERROR);
         )
     }
@@ -374,7 +374,7 @@ ParserNode _parNothing(List* tokens, size_t* i, List* errors)
             continue;
         }
     }
-    _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "expected ]", "try adding ]"));
+    _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "expected ]", "try adding ]"));
     return ptCreateNode(P_NOTHING);
 }
 
@@ -382,7 +382,7 @@ int _parValue(List* tokens, size_t* i, List* errors, ParserNode* out)
 {
     Token t;
     _parNextTokenP(tokens, i, t,
-        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, SIZE_MAX, SIZE_MAX), "unexpected end", "add here a value"));
+        _parErrAddP(errors, errCreateErrorToken(E_ERROR, tokenCreate(T_ERROR, listGet(*tokens, tokens->length - 1, Token).pos), "unexpected end", "add here a value"));
         return -2;
     )
     switch (t.type)

@@ -4,6 +4,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
+
+#include "FileSpan.h"
+#include "FilePos.h"
+#include "String.h"
 
 void tokenFree(Token token)
 {
@@ -17,7 +22,7 @@ void tokenFree(Token token)
     case T_LITERAL_STRING:
     case T_IDENTIFIER_PARAMETER:
     case T_INVALID:
-        free(token.string);
+        strFree(token.string);
         return;
     default:
         return;
@@ -26,97 +31,71 @@ void tokenFree(Token token)
 
 Token tokenFileSpan(T_TokenType type, FileSpan span)
 {
-    return tokenString(type, span.str.c, span.pos.line, span.pos.col);
+    return tokenStr(type, span.str, span.pos);
 }
 
-Token tokenCreate(T_TokenType type, size_t line, size_t col)
+Token tokenCreate(T_TokenType type, FilePos pos)
 {
     Token t =
     {
         .type = type,
-        .line = line,
-        .col = col,
+        .pos = pos,
         .integer = 0,
     };
     return t;
 }
 
-Token tokenString(T_TokenType type, char *string, size_t line, size_t col)
+Token tokenStr(T_TokenType type, String string, FilePos pos)
 {
     Token t =
     {
         .type = type,
-        .line = line,
-        .col = col,
+        .pos = pos,
         .string = string,
     };
     return t;
 }
 
-Token tokenInteger(T_TokenType type, long long integer, size_t line, size_t col)
+Token tokenInt(T_TokenType type, intmax_t integer, FilePos pos)
 {
     Token t =
     {
         .type = type,
-        .line = line,
-        .col = col,
+        .pos = pos,
         .integer = integer,
     };
     return t;
 }
 
-Token tokenDecimal(T_TokenType type, double decimal, size_t line, size_t col)
+Token tokenFloat(T_TokenType type, double decimal, FilePos pos)
 {
     Token t =
     {
         .type = type,
-        .line = line,
-        .col = col,
+        .pos = pos,
         .decimal = decimal,
     };
     return t;
 }
 
-Token tokenCharacter(T_TokenType type, char character, size_t line, size_t col)
+Token tokenChar(T_TokenType type, char character, FilePos pos)
 {
     Token t =
     {
         .type = type,
-        .line = line,
-        .col = col,
+        .pos = pos,
         .character = character,
     };
     return t;
 }
 
-Token tokenFileSpanPos(T_TokenType type, FileSpan span)
-{
-    return tokenCreate(type, span.pos.line, span.pos.col);
-}
-
-Token tokenFileSpanInt(T_TokenType type, long long value, FileSpan span)
-{
-    return tokenInteger(type, value, span.pos.line, span.pos.col);
-}
-
-Token tokenFileSpanDec(T_TokenType type, double value, FileSpan span)
-{
-    return tokenDecimal(type, value, span.pos.line, span.pos.col);
-}
-
-Token tokenFileSpanChar(T_TokenType type, char value, FileSpan span)
-{
-    return tokenCharacter(type, value, span.pos.line, span.pos.col);
-}
-
-Token tokenFileSpanBool(T_TokenType type, _Bool value, FileSpan span)
+Token tokenBool(T_TokenType type, _Bool boolean, FilePos pos)
 {
     Token t =
     {
         .type = type,
-        .line = span.pos.line,
-        .col = span.pos.col,
-        .boolean = value,
+        .pos = pos,
+        .boolean = boolean,
     };
     return t;
 }
@@ -126,31 +105,26 @@ Token tokenFileSpanPart(T_TokenType type, FileSpan span, size_t start, size_t le
     assert(span.str.c);
     assert(start + length <= span.str.length);
 
-    char* str = malloc((length + 1) * sizeof(char));
-    
-    assert(str);
-    
-    str[length] = 0;
-    strncpy_s(str, length + 1, span.str.c + start, length);
-
-    return tokenString(type, str, span.pos.line, span.pos.col);
+    return tokenStr(type, strCLen(span.str.c + start, length), span.pos);
 }
 
 void tokenPrint(FILE* out, Token token)
 {
+    fpPrint(out, token.pos);
+    fprintf(out, ": ");
     switch (token.type)
     {
     case T_UNDEFINED:
         fprintf(out, "undefined");
         return;
     case T_INVALID:
-        fprintf(out, "invalid(%s)", token.string);
+        fprintf(out, "invalid(%s)", token.string.c);
         return;
     case T_COMMENT_LINE:
-        fprintf(out, "lineComment(%s)", token.string);
+        fprintf(out, "lineComment(%s)", token.string.c);
         return;
     case T_COMMENT_BLOCK:
-        fprintf(out, "blockComment(%s)", token.string);
+        fprintf(out, "blockComment(%s)", token.string.c);
         return;
     case T_PUNCTUATION_BRACKET_OPEN:
         fprintf(out, "[(%zu)", token.integer);
@@ -159,13 +133,13 @@ void tokenPrint(FILE* out, Token token)
         fprintf(out, "](%zu)", token.integer);
         return;
     case T_IDENTIFIER_VARIABLE:
-        fprintf(out, "variable(%s)", token.string);
+        fprintf(out, "variable(%s)", token.string.c);
         return;
     case T_IDENTIFIER_FUNCTION:
-        fprintf(out, "function(%s)", token.string);
+        fprintf(out, "function(%s)", token.string.c);
         return;
     case T_IDENTIFIER_STRUCT:
-        fprintf(out, "struct(%s)", token.string);
+        fprintf(out, "struct(%s)", token.string.c);
         return;
     case T_STORAGE_POINTER:
         fprintf(out, "*");
@@ -186,7 +160,7 @@ void tokenPrint(FILE* out, Token token)
         fprintf(out, "bool");
         return;
     case T_IDENTIFIER_PARAMETER:
-        fprintf(out, "parameter(%s)", token.string);
+        fprintf(out, "parameter(%s)", token.string.c);
         return;
     case T_LITERAL_INTEGER:
         fprintf(out, "integer(%zu)", token.integer);
@@ -198,7 +172,7 @@ void tokenPrint(FILE* out, Token token)
         fprintf(out, "char(%c)", token.character);
         return;
     case T_LITERAL_STRING:
-        fprintf(out, "string(%s)", token.string);
+        fprintf(out, "string(%s)", token.string.c);
         return;
     case T_LITERAL_BOOL:
         fprintf(out, "bool(%s)", token.boolean ? "true" : "false");
@@ -225,10 +199,4 @@ void tokenPrint(FILE* out, Token token)
         fprintf(out, "unknown");
         return;
     }
-}
-
-void tokenPrintPos(FILE* out, Token token, const char* filename)
-{
-    fprintf(out, "%s:%zu:%zu: ", filename, token.line, token.col);
-    tokenPrint(out, token);
 }

@@ -125,13 +125,13 @@ Variable _evEval(ParserNode n, Runtime* r)
     case P_VALUE_CHAR:
         return rtCharVariable(n.token->character);
     case P_VALUE_STRING:
-        return rtStringVariable(strC(n.token->string));
+        return rtStringVariable(strCopy(n.token->string));
     case P_VALUE_BOOL:
-        return rtBoolVariable(n.token->string);
+        return rtBoolVariable(n.token->boolean);
     case P_IDENTIFIER:
     {
         Variable v;
-        String s = strC(n.token->string);
+        String s = strCopy(n.token->string);
         if (!rtGet(r, s, &v))
             return rtException(strLit("InvalidName"), strLit("The function doesn't exist"));
         strFree(s);

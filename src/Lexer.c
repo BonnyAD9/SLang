@@ -6,6 +6,7 @@
 #include <math.h>
 #include <assert.h>
 #include <limits.h>
+#include <stdint.h>
 
 #include "Token.h"
 #include "FileSpan.h"
@@ -103,7 +104,7 @@ List lexLex(FILE* in, List* errors, String* filename)
                 if (t->type == T_IDENTIFIER_STRUCT)
                     t->type = T_IDENTIFIER_FUNCTION;
             }
-            listAdd(tokens, tokenFileSpanInt(T_PUNCTUATION_BRACKET_OPEN, nest, span), Token);
+            listAdd(tokens, tokenInt(T_PUNCTUATION_BRACKET_OPEN, nest, span.pos), Token);
             fsFree(span);
             nest++;
             continue;
@@ -122,7 +123,7 @@ List lexLex(FILE* in, List* errors, String* filename)
                 continue;
             }
             nest--;
-            listAdd(tokens, tokenFileSpanInt(T_PUNCTUATION_BRACKET_CLOSE, nest, span), Token);
+            listAdd(tokens, tokenInt(T_PUNCTUATION_BRACKET_CLOSE, nest, span.pos), Token);
             fsFree(span);
             continue;
         // check for comments (starts with // or /*)
@@ -174,7 +175,7 @@ List lexLex(FILE* in, List* errors, String* filename)
                 listAdd(errs, errCreateErrorSpan(E_ERROR, span, "char literal is not closed", "try adding closing '"), ErrorSpan);
                 continue;
             }
-            listAdd(tokens, tokenFileSpanChar(T_LITERAL_CHAR, span.str.c[1], span), Token);
+            listAdd(tokens, tokenChar(T_LITERAL_CHAR, span.str.c[1], span.pos), Token);
             fsFree(span);
             continue;
         // nothing operator
@@ -182,7 +183,7 @@ List lexLex(FILE* in, List* errors, String* filename)
             // check if it is only the operator
             if (span.str.length != 1)
                 break;
-            listAdd(tokens, tokenFileSpanPos(T_OPERATOR_NOTHING, span), Token);
+            listAdd(tokens, tokenCreate(T_OPERATOR_NOTHING, span.pos), Token);
             fsFree(span);
             continue;
         default:
@@ -196,12 +197,12 @@ List lexLex(FILE* in, List* errors, String* filename)
             // check for negative values
             _Bool isNegative = *c == '-';
             // read whole part values
-            long long num = _lexReadInt(c + isNegative, &c, 10, &overflow);
+            intmax_t num = _lexReadInt(c + isNegative, &c, 10, &overflow);
             switch (*c)
             {
             // if it doesn't continue, it is integer
             case 0:
-                listAdd(tokens, tokenFileSpanInt(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
+                listAdd(tokens, tokenInt(T_LITERAL_INTEGER, isNegative ? -num : num, span.pos), Token);
                 if (overflow)
                     listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
                 else
@@ -226,7 +227,7 @@ List lexLex(FILE* in, List* errors, String* filename)
                 // if this is not end break into error
                 if (*c)
                     break;
-                listAdd(tokens, tokenFileSpanDec(T_LITERAL_FLOAT, isNegative ? -decimal : decimal, span), Token);
+                listAdd(tokens, tokenFloat(T_LITERAL_FLOAT, isNegative ? -decimal : decimal, span.pos), Token);
                 // check for too large or precise numbers
                 if (isinf(decimal))
                     listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large and will be trated as infinity", "use different type (string?)"), ErrorSpan) // there shouldn't be ;
@@ -241,7 +242,7 @@ List lexLex(FILE* in, List* errors, String* filename)
                 num = _lexReadInt(c + 1, &c, 16, &overflow);
                 if (*c)
                     break;
-                listAdd(tokens, tokenFileSpanInt(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
+                listAdd(tokens, tokenInt(T_LITERAL_INTEGER, isNegative ? -num : num, span.pos), Token);
                 if (overflow)
                     listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
                         else fsFree(span);
@@ -251,7 +252,7 @@ List lexLex(FILE* in, List* errors, String* filename)
                 num = _lexReadInt(c + 1, &c, 2, &overflow);
                 if (*c)
                     break;
-                listAdd(tokens, tokenFileSpanInt(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
+                listAdd(tokens, tokenInt(T_LITERAL_INTEGER, isNegative ? -num : num, span.pos), Token);
                 if (overflow)
                     listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
                         else fsFree(span);
@@ -266,7 +267,7 @@ List lexLex(FILE* in, List* errors, String* filename)
                 num = _lexReadInt(c + 1, &c, num, &overflow);
                 if (*c)
                     break;
-                listAdd(tokens, tokenFileSpanInt(T_LITERAL_INTEGER, isNegative ? -num : num, span), Token);
+                listAdd(tokens, tokenInt(T_LITERAL_INTEGER, isNegative ? -num : num, span.pos), Token);
                 if (overflow)
                     listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
                         else fsFree(span);
@@ -326,12 +327,12 @@ List lexLex(FILE* in, List* errors, String* filename)
 
         if (strcmp(span.str.c, "true") == 0)
         {
-            listAdd(tokens, tokenFileSpanBool(T_LITERAL_BOOL, 1, span), Token);
+            listAdd(tokens, tokenBool(T_LITERAL_BOOL, 1, span.pos), Token);
             continue;
         }
         if (strcmp(span.str.c, "false") == 0)
         {
-            listAdd(tokens, tokenFileSpanBool(T_LITERAL_BOOL, 0, span), Token);
+            listAdd(tokens, tokenBool(T_LITERAL_BOOL, 0, span.pos), Token);
             continue;
         }
 
@@ -343,7 +344,7 @@ List lexLex(FILE* in, List* errors, String* filename)
                 if (t->type == T_IDENTIFIER_STRUCT)
                     t->type = T_IDENTIFIER_VARIABLE;
             }
-#define __lexCheckStorage(__str, __tpe) if(strcmp(span.str.c, __str) == 0){Token __t=tokenFileSpanPos(__tpe, span);listAddP(&tokens, &__t);continue;}
+#define __lexCheckStorage(__str, __tpe) if(strcmp(span.str.c, __str) == 0){Token __t=tokenCreate(__tpe, span.pos);listAddP(&tokens, &__t);continue;}
             __lexCheckStorage("*", T_STORAGE_POINTER);
             __lexCheckStorage("char", T_STORAGE_CHAR);
             __lexCheckStorage("string", T_STORAGE_STRING);
@@ -376,7 +377,7 @@ List lexLex(FILE* in, List* errors, String* filename)
             switch (listGet(tokens, tokens.length - 1, Token).type)
             {
             case T_PUNCTUATION_BRACKET_OPEN:
-#define __checkStorage(__str, __tpe) if(strcmp(span.str.c, __str) == 0){Token __t=tokenFileSpanPos(__tpe, span);listAddP(&tokens, &__t);continue;}
+#define __checkStorage(__str, __tpe) if(strcmp(span.str.c, __str) == 0){Token __t=tokenCreate(__tpe, span.pos);listAddP(&tokens, &__t);continue;}
                 __lexCheckStorage("*", T_STORAGE_POINTER);
                 __lexCheckStorage("char", T_STORAGE_CHAR);
                 __lexCheckStorage("string", T_STORAGE_STRING);
@@ -422,7 +423,7 @@ List lexLex(FILE* in, List* errors, String* filename)
     return tokens;
 }
 
-long long _lexGetDigit(char digit)
+intmax_t _lexGetDigit(char digit)
 {
     if (digit < '0')
         return 37;
@@ -437,17 +438,17 @@ long long _lexGetDigit(char digit)
     return digit - 'a' + 10;
 }
 
-long long _lexReadInt(char* str, char** endptr, long long base, _Bool* overflow)
+intmax_t _lexReadInt(char* str, char** endptr, intmax_t base, _Bool* overflow)
 {
     assert(str);
     assert(base <= 36 && base >= 2);
 
-    long long num = 0;
-    long long digit;
+    intmax_t num = 0;
+    intmax_t digit;
     _Bool ovfl = 0;
     for (; *str && (digit = _lexGetDigit(*str)) < base; str++)
     {
-        if (num > LLONG_MAX / base || (num == LLONG_MAX / base && digit > LLONG_MAX % base))
+        if (num > INTMAX_MAX / base || (num == INTMAX_MAX / base && digit > INTMAX_MAX % base))
             ovfl = 1;
         num = num * base + digit;
     }
@@ -472,7 +473,7 @@ int _lexCheckKeyword(const char* kw, T_TokenType type, FileSpan span, List* toke
             listAddP(errors, &t);
             return -1;
         }
-        Token t = tokenFileSpanPos(type, span);
+        Token t = tokenCreate(type, span.pos);
         listAddP(tokens, &t);
         return 1;
     }

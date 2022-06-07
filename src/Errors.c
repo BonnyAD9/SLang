@@ -102,8 +102,8 @@ void errPrintErrorToken(FILE* out, ErrorToken error, const char* filename)
         break;
     }
 
-    fprintf(out, "%s:%zu:%zu:\t%s%s"term_COLRESET" %s\n\t%s",
-            filename, error.token.line, error.token.col,
+    fpPrint(out, error.token.pos);
+    fprintf(out, ":\t%s%s"term_COLRESET" %s\n\t%s",
             msgColor, msgType, error.message,
             msgColor);
     tokenPrint(out, error.token);
