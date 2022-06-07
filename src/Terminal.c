@@ -10,28 +10,28 @@ size_t _stFSeek(void* stream, long offset, int pos);
 Stream _termCreate(FILE* str, StreamFlags flags);
 int _nothing(void* p) { return 0; }
 
-Stream _termIn()
+Stream* _termIn()
 {
     static Stream s = { .flags = stNONE };
     if (s.flags == stNONE)
         s = _termCreate(stdin, stREAD);
-    return s;
+    return &s;
 }
 
-Stream _termOut()
+Stream* _termOut()
 {
     static Stream s = { .flags = stNONE };
     if (s.flags == stNONE)
         s = _termCreate(stdout, stWRITE);
-    return s;
+    return &s;
 }
 
-Stream _termErr()
+Stream* _termErr()
 {
     static Stream s = { .flags = stNONE };
     if (s.flags == stNONE)
         s = _termCreate(stderr, stWRITE);
-    return s;
+    return &s;
 }
 
 Stream _termCreate(FILE* str, StreamFlags flags)

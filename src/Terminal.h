@@ -18,8 +18,8 @@
 #define term_BCYAN "\x1b[96m"
 #define term_BWHITE "\x1b[97m"
 
-Stream _termIn();
-Stream _termOut();
-Stream _termErr();
+Stream* _termIn();
+Stream* _termOut();
+Stream* _termErr();
 
 #endif // TERMINAL_INCLUDED

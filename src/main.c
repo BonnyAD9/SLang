@@ -10,6 +10,8 @@
 #include "Parser.h"
 #include "String.h"
 #include "Evaluator.h"
+#include "Stream.h"
+#include "Terminal.h"
 
 int main(int argc, char** argv)
 {
