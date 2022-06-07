@@ -20,6 +20,7 @@ int main(int argc, char** argv)
     }
 
     const char* filename = argv[1];
+    String fn = strC(filename);
     FILE* f;
     if (fopen_s(&f, filename, "r")) {
       printf("Error: couldn't open file %s", filename);
@@ -27,7 +28,7 @@ int main(int argc, char** argv)
     }
 
     List errs;
-    List tokens = lexLex(f, &errs);
+    List tokens = lexLex(f, &errs, &fn);
     fclose(f);
 
     size_t errors = 0;

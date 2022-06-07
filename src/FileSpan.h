@@ -1,26 +1,23 @@
 #ifndef fs_FILE_SPAN_INCLUDED
 #define fs_FILE_SPAN_INCLUDED
 
-#include <stdlib.h>
+#include "FilePos.h"
+#include "String.h"
 
 typedef struct FileSpan
 {
-    char* str;
-    size_t length;
-    size_t line;
-    size_t col;
+    String str;
+    FilePos pos;
 } FileSpan;
 
 /**
- * @brief Copies file span from buffer
+ * @brief creates new FileSpan
  * 
- * @param buffer buffer to copy from
- * @param length number of characters to copy
- * @param line line in file
- * @param col column in file
- * @return FileSpan new instance
+ * @param str contents
+ * @param position position in file
+ * @return FileSpan 
  */
-FileSpan fsCopyFrom(const char* buffer, size_t length, size_t line, size_t col);
+FileSpan fsCreate(String str, FilePos position);
 
 /**
  * @brief frees this instance of file span

@@ -62,7 +62,7 @@ void rtPrintExceptionE(FILE* out, Variable exception)
 
     if (exception.type != V_EXCEPTION)
         return;
-    fprintf(out, term_BRED"%s:"term_COLRESET" %s", exception.name.data, exception.str.data);
+    fprintf(out, term_BRED"%s:"term_COLRESET" %s", exception.name.c, exception.str.c);
     exit(EXIT_FAILURE);
 }
 
@@ -72,7 +72,7 @@ void rtPrintException(FILE* out, Variable exception)
 
     if (exception.type != V_EXCEPTION)
         return;
-    fprintf(out, term_BRED"%s:"term_COLRESET" %s", exception.name.data, exception.str.data);
+    fprintf(out, term_BRED"%s:"term_COLRESET" %s", exception.name.c, exception.str.c);
 }
 
 Variable rtCreateBoolVariable(String name, _Bool value)

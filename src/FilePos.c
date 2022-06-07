@@ -18,5 +18,5 @@ FilePos fpCreate(size_t line, size_t col, String* filename)
 
 int fpPrint(FILE* out, FilePos fp)
 {
-    return fprintf(out, "%s:%zu:%zu", fp.filename->data, fp.line, fp.col);
+    return fprintf(out, "%s:%zu:%zu", fp.filename->c, fp.line, fp.col);
 }

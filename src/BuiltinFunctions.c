@@ -51,14 +51,14 @@ Variable bifPrint(Function f, Runtime* r, List par)
             printf("%c", v.character);
             break;
         case V_STRING:
-            printf("%s", v.str.data);
+            printf("%s", v.str.c);
             break;
         case V_STRUCT:
             printf("<struct>");
             break;
         case V_FUNCTION:
-            printf("[%s", v.name.data);
-            listForEach(v.function.parameters, String, s, printf(" %s", s.data));
+            printf("[%s", v.name.c);
+            listForEach(v.function.parameters, String, s, printf(" %s", s.c));
             printf("]");
             break;
         case V_NOTHING:

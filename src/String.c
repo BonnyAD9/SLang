@@ -4,11 +4,13 @@
 #include <string.h>
 #include <assert.h>
 
+#include "DebugTools.h"
+
 String strEmpty()
 {
     String str =
     {
-        .data = NULL,
+        .c = NULL,
         .length = 0,
     };
     return str;
@@ -16,13 +18,13 @@ String strEmpty()
 
 void strFree(String s)
 {
-    if (s.data)
-        free(s.data);
+    if (s.c)
+        free(s.c);
 }
 
 String strCopy(String s)
 {
-    return strCLen(s.data, s.length);
+    return strCLen(s.c, s.length);
 }
 
 String strC(const char* str)
@@ -35,14 +37,14 @@ String strCLen(const char* str, size_t length)
     String s =
     {
         .length = length,
-        .data = malloc((length + 1) * sizeof(char)),
+        .c = malloc((length + 1) * sizeof(char)),
     };
 
-    assert(s.data);
+    assert(s.c);
 
-    s.data[length] = 0;
+    s.c[length] = 0;
 
-    strcpy_s(s.data, length + 1, str);
+    strncpy_s(s.c, length + 1, str, length);
     return s;
 }
 
@@ -50,12 +52,12 @@ _Bool strEquals(String str1, String str2)
 {
     if (str1.length != str2.length)
         return 0;
-    return strcmp(str1.data, str2.data) == 0;
+    return strcmp(str1.c, str2.c) == 0;
 }
 
 _Bool strEqualsC(String str1, const char* str2, size_t str2Length)
 {
     if (str1.length != str2Length)
         return 1;
-    return strcmp(str1.data, str2) == 0;
+    return strcmp(str1.c, str2) == 0;
 }

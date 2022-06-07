@@ -20,6 +20,6 @@
  * @param errors where to put error tokens
  * @return List of tokens Tokenized result
  */
-List lexLex(FILE* in, List* errors);
+List lexLex(FILE* in, List* errors, String* filename);
 
 #endif // lex_LEXER_INCLUDED

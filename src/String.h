@@ -8,7 +8,7 @@
 
 typedef struct String
 {
-    char* data;
+    char* c;
     size_t length;
 } String;
 

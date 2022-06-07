@@ -1,27 +1,20 @@
 #include "FileSpan.h"
 
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
+#include "String.h"
+#include "FilePos.h"
+#include "DebugTools.h"
 
-FileSpan fsCopyFrom(const char* buffer, size_t length, size_t line, size_t col)
+FileSpan fsCreate(String str, FilePos position)
 {
-    assert(buffer);
-    char* str = malloc((length + 1) * sizeof(char));
-    assert(str);
-    str[length] = 0;
-    strncpy_s(str, length + 1, buffer, length);
-    FileSpan span =
+    FileSpan fs =
     {
         .str = str,
-        .length = length,
-        .line = line,
-        .col = col,
+        .pos = position,
     };
-    return span;
+    return fs;
 }
 
-void fsFree(FileSpan span)
+void fsFree(FileSpan fs)
 {
-    free(span.str);
+    strFree(fs.str);
 }

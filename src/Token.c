@@ -26,7 +26,7 @@ void tokenFree(Token token)
 
 Token tokenFileSpan(T_TokenType type, FileSpan span)
 {
-    return tokenString(type, span.str, span.line, span.col);
+    return tokenString(type, span.str.c, span.pos.line, span.pos.col);
 }
 
 Token tokenCreate(T_TokenType type, size_t line, size_t col)
@@ -91,22 +91,22 @@ Token tokenCharacter(T_TokenType type, char character, size_t line, size_t col)
 
 Token tokenFileSpanPos(T_TokenType type, FileSpan span)
 {
-    return tokenCreate(type, span.line, span.col);
+    return tokenCreate(type, span.pos.line, span.pos.col);
 }
 
 Token tokenFileSpanInt(T_TokenType type, long long value, FileSpan span)
 {
-    return tokenInteger(type, value, span.line, span.col);
+    return tokenInteger(type, value, span.pos.line, span.pos.col);
 }
 
 Token tokenFileSpanDec(T_TokenType type, double value, FileSpan span)
 {
-    return tokenDecimal(type, value, span.line, span.col);
+    return tokenDecimal(type, value, span.pos.line, span.pos.col);
 }
 
 Token tokenFileSpanChar(T_TokenType type, char value, FileSpan span)
 {
-    return tokenCharacter(type, value, span.line, span.col);
+    return tokenCharacter(type, value, span.pos.line, span.pos.col);
 }
 
 Token tokenFileSpanBool(T_TokenType type, _Bool value, FileSpan span)
@@ -114,8 +114,8 @@ Token tokenFileSpanBool(T_TokenType type, _Bool value, FileSpan span)
     Token t =
     {
         .type = type,
-        .line = span.line,
-        .col = span.col,
+        .line = span.pos.line,
+        .col = span.pos.col,
         .boolean = value,
     };
     return t;
@@ -123,17 +123,17 @@ Token tokenFileSpanBool(T_TokenType type, _Bool value, FileSpan span)
 
 Token tokenFileSpanPart(T_TokenType type, FileSpan span, size_t start, size_t length)
 {
-    assert(span.str);
-    assert(start + length <= span.length);
+    assert(span.str.c);
+    assert(start + length <= span.str.length);
 
     char* str = malloc((length + 1) * sizeof(char));
     
     assert(str);
     
     str[length] = 0;
-    strncpy_s(str, length + 1, span.str + start, length);
+    strncpy_s(str, length + 1, span.str.c + start, length);
 
-    return tokenString(type, str, span.line, span.col);
+    return tokenString(type, str, span.pos.line, span.pos.col);
 }
 
 void tokenPrint(FILE* out, Token token)

@@ -6,6 +6,7 @@
 #include "FileSpan.h"
 #include "Token.h"
 #include "Terminal.h"
+#include "FilePos.h"
 
 /**
  * @brief creates copy of the given string
@@ -51,10 +52,10 @@ void errPrintErrorSpan(FILE* out, ErrorSpan token, const char* filename)
         break;
     }
 
-    fprintf(out, "%s:%zu:%zu:\t%s%s"term_COLRESET" %s\n\t%s%s"term_COLRESET"\n\t\x1b"term_BGREEN"help:\x1b[0m %s",
-            filename, token.span.line, token.span.col,
+    fpPrint(out, token.span.pos);
+    fprintf(out, ":\t%s%s"term_COLRESET" %s\n\t%s%s"term_COLRESET"\n\t\x1b"term_BGREEN"help:\x1b[0m %s",
             msgColor, msgType, token.message,
-            msgColor, token.span.str,
+            msgColor, token.span.str.c,
             token.help);
 }
 

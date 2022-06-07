@@ -8,6 +8,9 @@
         "assert.h": "c",
         "stdint.h": "c",
         "algorithm": "c",
-        "cmath": "c"
+        "cmath": "c",
+        "iterator": "c",
+        "xstring": "c",
+        "xutility": "c"
     }
 }
