@@ -115,88 +115,88 @@ void tokenPrint(FILE* out, Token token)
     switch (token.type)
     {
     case T_UNDEFINED:
-        fprintf(out, "undefined");
+        fprintf(out, "undefined\n");
         return;
     case T_INVALID:
-        fprintf(out, "invalid(%s)", token.string.c);
+        fprintf(out, "invalid(%s)\n", token.string.c);
         return;
     case T_COMMENT_LINE:
-        fprintf(out, "lineComment(%s)", token.string.c);
+        fprintf(out, "lineComment(%s)\n", token.string.c);
         return;
     case T_COMMENT_BLOCK:
-        fprintf(out, "blockComment(%s)", token.string.c);
+        fprintf(out, "blockComment(%s)\n", token.string.c);
         return;
     case T_PUNCTUATION_BRACKET_OPEN:
-        fprintf(out, "[(%zu)", token.integer);
+        fprintf(out, "[(%zu)\n", token.integer);
         return;
     case T_PUNCTUATION_BRACKET_CLOSE:
-        fprintf(out, "](%zu)", token.integer);
+        fprintf(out, "](%zu)\n", token.integer);
         return;
     case T_IDENTIFIER_VARIABLE:
-        fprintf(out, "variable(%s)", token.string.c);
+        fprintf(out, "variable(%s)\n", token.string.c);
         return;
     case T_IDENTIFIER_FUNCTION:
-        fprintf(out, "function(%s)", token.string.c);
+        fprintf(out, "function(%s)\n", token.string.c);
         return;
     case T_IDENTIFIER_STRUCT:
-        fprintf(out, "struct(%s)", token.string.c);
+        fprintf(out, "struct(%s)\n", token.string.c);
         return;
     case T_STORAGE_POINTER:
-        fprintf(out, "*");
+        fprintf(out, "*\n");
         return;
     case T_STORAGE_CHAR:
-        fprintf(out, "char");
+        fprintf(out, "char\n");
         return;
     case T_STORAGE_STRING:
-        fprintf(out, "string");
+        fprintf(out, "string\n");
         return;
     case T_STORAGE_INT:
-        fprintf(out, "int");
+        fprintf(out, "int\n");
         return;
     case T_STORAGE_FLOAT:
-        fprintf(out, "float");
+        fprintf(out, "float\n");
         return;
     case T_STORAGE_BOOL:
-        fprintf(out, "bool");
+        fprintf(out, "bool\n");
         return;
     case T_IDENTIFIER_PARAMETER:
-        fprintf(out, "parameter(%s)", token.string.c);
+        fprintf(out, "parameter(%s)\n", token.string.c);
         return;
     case T_LITERAL_INTEGER:
-        fprintf(out, "integer(%zu)", token.integer);
+        fprintf(out, "integer(%zu)\n", token.integer);
         return;
     case T_LITERAL_FLOAT:
-        fprintf(out, "float(%lf)", token.decimal);
+        fprintf(out, "float(%lf)\n", token.decimal);
         return;
     case T_LITERAL_CHAR:
-        fprintf(out, "char(%c)", token.character);
+        fprintf(out, "char(%c)\n", token.character);
         return;
     case T_LITERAL_STRING:
-        fprintf(out, "string(%s)", token.string.c);
+        fprintf(out, "string(%s)\n", token.string.c);
         return;
     case T_LITERAL_BOOL:
-        fprintf(out, "bool(%s)", token.boolean ? "true" : "false");
+        fprintf(out, "bool(%s)\n", token.boolean ? "true" : "false");
         return;
     case T_KEYWORD_DEF:
-        fprintf(out, "def");
+        fprintf(out, "def\n");
         return;
     case T_KEYWORD_STRUCT:
-        fprintf(out, "struct");
+        fprintf(out, "struct\n");
         return;
     case T_KEYWORD_SET:
-        fprintf(out, "set");
+        fprintf(out, "set\n");
         return;
     case T_KEYWORD_SIGN:
-        fprintf(out, "sign");
+        fprintf(out, "sign\n");
         return;
     case T_OPERATOR_NOTHING:
-        fprintf(out, "_");
+        fprintf(out, "_\n");
         return;
     case T_ERROR:
-        fprintf(out, "error");
+        fprintf(out, "error\n");
         return;
     default:
-        fprintf(out, "unknown");
+        fprintf(out, "unknown\n");
         return;
     }
 }

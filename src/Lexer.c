@@ -13,6 +13,17 @@
 #include "List.h"
 #include "Errors.h"
 #include "DebugTools.h"
+#include "Stream.h"
+#include "StringBuilder.h"
+
+typedef struct _LexTContext
+{
+    Stream* in;
+    FilePos pos;
+    StringBuilder sb;
+    List spans;
+    List errors;
+} _LexTContext;
 
 /**
  * @brief splits the file contents into FileSpans
@@ -20,20 +31,7 @@
  * @param in File to read from
  * @return List list of FileSpans
  */
-List _lexTokenize(FILE* in, String* filename);
-
-/**
- * @brief reads quoted text
- * 
- * @param in where to read from
- * @param buffer where to read to
- * @param bufferSize maximum size of buffer
- * @param quoteChar character that quotes the text
- * @param line tracks line number
- * @param col tracks column number
- * @return size_t number of characters readed
- */
-size_t _lexReadQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size_t* line, size_t* col);
+List _lexTokenize(Stream* in, String* filename);
 
 /**
  * @brief reads positive int from string
@@ -68,7 +66,97 @@ int _lexCheckKeyword(const char* kw, T_TokenType type, FileSpan span, List* toke
  */
 long long _lexGetDigit(char digit);
 
-List lexLex(FILE* in, List* errors, String* filename)
+/**
+ * @brief adds currentyl readed token if any and moves to the next line
+ * 
+ * @param ltc context
+ */
+void _lexOnNewline(_LexTContext* restrict ltc);
+
+/**
+ * @brief moves position to the next line
+ * 
+ * @param ltc where to move the position
+ */
+void _lexNewline(_LexTContext* restrict ltc);
+
+/**
+ * @brief adds string from the stringbuilder to spans list
+ * 
+ * @param ltc context
+ */
+void _lexSbAdd(_LexTContext* restrict ltc);
+
+/**
+ * @brief gets the position of the token currently in the sb
+ * 
+ */
+FilePos _lexGetPos(_LexTContext* restrict ltc);
+
+/**
+ * @brief adds currently readed token if any
+ * 
+ * @param ltc context
+ */
+void _lexOnWhitespace(_LexTContext* restrict ltc);
+
+/**
+ * @brief adds currently readed token and the bracket
+ * 
+ * @param ltc context
+ * @param chr bracket that was readed
+ */
+void _lexOnBracket(_LexTContext* restrict ltc, char chr);
+
+/**
+ * @brief if this is first character of token reads quote literal, otherwise reads character
+ * 
+ * @param ltc context
+ * @param chr currently readed character
+ */
+void _lexOnQuote(_LexTContext* restrict ltc, int chr);
+
+/**
+ * @brief reads escaped character
+ * 
+ * @param ltc context
+ * @param qchr endqote character
+ * @return int last unused character
+ */
+int _lexOnEscape(_LexTContext* restrict ltc, int qchr);
+
+/**
+ * @brief reads \x escape code
+ * 
+ * @param ltc context
+ * @param qchr endquote character
+ * @return int last unused character
+ */
+int _lexOnHexEscape(_LexTContext* restrict ltc, int qchr);
+
+/**
+ * @brief reads comments or just returns the next character
+ * 
+ * @param ltc context
+ * @return int the last unused character
+ */
+int _lexOnSlash(_LexTContext* restrict ltc);
+
+/**
+ * @brief reads line comment
+ * 
+ * @param ltc context
+ */
+void _lexReadLineComment(_LexTContext* restrict ltc);
+
+/**
+ * @brief reads block comment
+ * 
+ * @param ltc context
+ */
+void _lexReadBlockComment(_LexTContext* restrict ltc);
+
+List lexLex(Stream* in, List* errors, String* filename)
 {
     assert(in);
     assert(errors);
@@ -480,283 +568,312 @@ int _lexCheckKeyword(const char* kw, T_TokenType type, FileSpan span, List* toke
     return 0;
 }
 
-List _lexTokenize(FILE* in, String* filename)
+List _lexTokenize(Stream* in, String* filename)
 {
     assert(in);
-    _Static_assert(lex_LEXER_READ_BUFFER_SIZE > 1, "_tokenize: minimum LEXER_READ_BUFFER_SIZE is 2");
+    assert(filename);
 
-    List list = listNew(FileSpan);
-
-    char buffer[lex_LEXER_READ_BUFFER_SIZE];
-    size_t pos = 0;
-
-    // tracking position in file
-    size_t line = 1;
-    size_t col = 0;
+    _LexTContext context =
+    {
+        .errors = listNew(ErrorSpan),
+        .in = in,
+        .pos = fpCreate(1, 0, filename),
+        .sb = sbCreate(),
+        .spans = listNew(FileSpan),
+    };
+    _LexTContext* restrict ltc = &context;
 
     // proccessing char by char
     int chr;
-    while ((chr = fgetc(in)) != EOF)
+    while ((chr = stGetChar(in)) != EOF)
     {
+    continueNoRead:
         // each char changes column in file by 1
-        col++;
+        ltc->pos.col++;
 
         switch (chr)
         {
         // newline ends any currently readed token and updates position in file
         case '\n':
-            if (pos != 0)
-            {
-                listAdd(list, fsCreate(strCLen(buffer, pos), fpCreate(line, col - pos, filename)), FileSpan);
-                pos = 0;
-            }
-            line++;
-            col = 0;
+            _lexOnNewline(ltc);
             continue;
         // whitespaces end any currently readed token
         case ' ':
         case '\t':
         case '\r':
-            if (pos == 0)
-                continue;
-            listAdd(list, fsCreate(strCLen(buffer, pos), fpCreate(line, col - pos, filename)), FileSpan);
-            pos = 0;
+            _lexOnWhitespace(ltc);
             continue;
         // brackets are always token by them self
         case '[':
         case ']':
-            // end any currently readed token
-            if (pos != 0)
-            {
-                listAdd(list, fsCreate(strCLen(buffer, pos), fpCreate(line, col - pos, filename)), FileSpan);
-                pos = 0;
-            }
-            // read the bracket
-            {
-                char character = chr;
-                listAdd(list, fsCreate(strCLen(&character, 1), fpCreate(line, col, filename)), FileSpan);
-            }
+            _lexOnBracket(ltc, chr);
             continue;
         // strings and chars are in single or double quotes
         case '"':
         case '\'':
-            // if this is not first char of token, it is not string / char literal
-            if (pos != 0)
-            {
-                if (pos >= lex_LEXER_READ_BUFFER_SIZE)
-                    dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
-                buffer[pos] = chr;
-                pos++;
-                continue;
-            }
-            // otherwise read all the text within the quotes
-            {
-                // save the position of the beggining of the literal
-                size_t qLine = line;
-                size_t qCol = col;
-                // read the text (keep track of the position in file       v      v)
-                pos = _lexReadQuote(in, buffer, lex_LEXER_READ_BUFFER_SIZE, chr, &line, &col);
-                listAdd(list, fsCreate(strCLen(buffer, pos), fpCreate(qLine, qCol, filename)), FileSpan);
-                pos = 0;
-            }
+            _lexOnQuote(ltc, chr);
             continue;
-        // single line comments start with //
+        // single comments start with // or /*
         case '/':
-            // continue reading if there are not two /
-            if (pos == 0 || buffer[pos - 1] != '/')
-            {
-                if (pos >= lex_LEXER_READ_BUFFER_SIZE)
-                    dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
-                buffer[pos] = '/';
-                pos++;
+            chr = _lexOnSlash(ltc);
+            if (chr < 0)
                 continue;
-            }
-            // comments immidietly end the token, the / is not part of the token
-            if (pos > 1)
-                listAdd(list, fsCreate(strCLen(buffer, pos - 1), fpCreate(line, col - pos, filename)), FileSpan);
-            // read the comment with the //
-            pos = 2;
-            buffer[0] = '/';
-            buffer[1] = '/';
-            while ((chr = fgetc(in)) != EOF)
-            {
-                // keep track of the position in file
-                col++;
-                // newline ends the line comment
-                if (chr == '\n')
-                {
-                    listAdd(list, fsCreate(strCLen(buffer, pos), fpCreate(line, col - pos, filename)), FileSpan);
-                    pos = 0;
-                    line++;
-                    col = 0;
-                    break;
-                }
-                if (pos >= lex_LEXER_READ_BUFFER_SIZE)
-                    dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
-                buffer[pos] = chr;
-                pos++;
-            }
-            continue;
-        // block comments start with /* and end with */ (/*/ is valid block comment)
-        case '*':
-            // checking for the begginging of the comment
-            if (pos == 0 || buffer[pos - 1] != '/')
-            {
-                if (pos >= lex_LEXER_READ_BUFFER_SIZE)
-                    dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
-                buffer[pos] = '*';
-                pos++;
-                continue;
-            }
-            // comments immidietly end any previous token (/ is not part of the token)
-            if (pos > 1)
-                listAdd(list, fsCreate(strCLen(buffer, pos - 1), fpCreate(line, col - pos, filename)), FileSpan);
-            // read the comment with the /*
-            pos = 2;
-            buffer[0] = '/';
-            buffer[1] = '*';
-            {
-                // save the position of the comment in file
-                size_t comLine = line;
-                size_t comCol = col - 1;
-                while ((chr = fgetc(in)) != EOF)
-                {
-                    // keep track of position in file
-                    col++;
-                    if (chr == '\n')
-                    {
-                        line++;
-                        col = 0;
-                    }
-                    if (pos >= lex_LEXER_READ_BUFFER_SIZE)
-                        dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
-                    buffer[pos] = chr;
-                    pos++;
-                    // check for the */ that ends the comment
-                    if (chr == '/' && buffer[pos - 2] == '*')
-                    {
-                        listAdd(list, fsCreate(strCLen(buffer, pos), fpCreate(comLine, comCol, filename)), FileSpan);
-                        pos = 0;
-                        break;
-                    }
-                }
-            }
-            continue;
+            goto continueNoRead;
         // read any nonspecial characters
         default:
-            if (pos >= lex_LEXER_READ_BUFFER_SIZE)
-                dtExcept("_tokenize: token is too long, max size is %zu", lex_LEXER_READ_BUFFER_SIZE);
-            buffer[pos] = chr;
-            pos++;
+            sbAdd(&ltc->sb, chr);
             continue;
         }
     }
     // if file ends, read the last readed token
-    if (pos != 0)
-        listAdd(list, fsCreate(strCLen(buffer, pos), fpCreate(line, col - pos, filename)), FileSpan);
-    return list;
+    if (ltc->sb.length != 0)
+        _lexSbAdd(ltc);
+    
+    // for now the error list is always empty
+    listDeepFree(ltc->errors, ErrorSpan, e, errFreeErrorSpan(e));
+    sbFree(&ltc->sb);
+
+    return ltc->spans;
 }
 
-size_t _lexReadQuote(FILE* in, char* buffer, size_t bufferSize, int quoteChar, size_t* line, size_t* col)
+void _lexOnQuote(_LexTContext* restrict ltc, int qchr)
 {
-    assert(in);
-    assert(buffer);
-    assert(bufferSize > 1);
-    assert(line);
-    assert(col);
-
     // the first quote is part of the token
-    *buffer = quoteChar;
-    size_t pos = 0;
+    sbAdd(&ltc->sb, qchr);
+
+    // if this is not first char of token, it is not string / char literal
+    if (ltc->sb.length != 1)
+        return;
+
+    // save the beggining of the token
+    FilePos tPos = ltc->pos;
 
     int chr;
-    while ((chr = fgetc(in)) != EOF)
+    while ((chr = stGetChar(ltc->in)) >= 0)
     {
-        // keep track of position in file and buffer
-        (*col)++;
-        pos++;
-        if (pos >= bufferSize)
-            dtExcept("_readQuote: quoted token is too long, max size is %zu", bufferSize);
-        
-        buffer[pos] = chr;
-
-        // check for ending quote
-        if (chr == quoteChar)
-            return pos + 1; // pos is position of last readed character
-
-        // keep track of position in file across lines
-        if (chr == '\n')
-        {
-            *col = 0;
-            (*line)++;
-        }
-
-        // escaping
-        if (chr != '\\')
-            continue;
-
-        // reading the escaped character
-        if ((chr = fgetc(in)) == EOF)
-            return pos + 1; // pos is position of last readed character
-        (*col)++;
+    continueNoRead:
+        // keep track of position in file
+        ltc->pos.col++;
 
         switch (chr)
         {
-        // NULL is escaped with \0
-        case '0':
-            buffer[pos] = '\0';
-            continue;
-        // newline is escaped with \n
-        case 'n':
-            buffer[pos] = '\n';
-            continue;
-        // carrige return is escaped with \r
-        case 'r':
-            buffer[pos] = '\r';
-            continue;
-        // tab is escaped with \t
-        case 't':
-            buffer[pos] = '\t';
-            continue;
-        case 'x':
-        {
-            char buf[3];
-            buf[2] = 0;
-            (*col)++;
-            if ((chr = fgetc(in)) == EOF)
-            {
-                buffer[pos] = 'x';
-                return pos + 1;
-            }
-            buf[0] = chr;
-            (*col)++;
-            if ((chr = fgetc(in)) == EOF)
-            {
-                buffer[pos] = 'x';
-                pos++;
-                if (pos >= bufferSize)
-                    dtExcept("_readQuote: :%zu:%zu: quoted token is too long, max size is %zu", *line, *col, bufferSize);
-                buffer[pos] = buf[0];
-                return pos + 1;
-            }
-            buf[1] = chr;
-            char* end;
-            buffer[pos] = _lexReadInt(buf, &end, 16, NULL);
-            if (*end)
-                dtExcept("_readQuote: :%zu:%zu: inavlid escape sequence", *line, *col);
+        case '\\':
+            chr = _lexOnEscape(ltc, qchr);
+            if (chr < 0)
+                return;
+            goto continueNoRead;
+        case '\n':
+            _lexNewline(ltc);
+        default:
+            sbAdd(&ltc->sb, chr);
             break;
         }
-        // any other character after \ will be readed literaly (\\, \")
-        default:
-            // keep track of position in file
-            if (chr == '\n')
-            {
-                *col = 0;
-                (*line)++;
-            }
-            buffer[pos] = chr;
-            continue;
+        
+        // return
+        if (chr == qchr)
+        {
+            listAdd(ltc->spans, fsCreate(sbGet(&ltc->sb), tPos), FileSpan);
+            sbClear(&ltc->sb);
+            return;
         }
     }
-    return pos + 1; // pos is position of last readed character
+}
+
+void _lexOnNewline(_LexTContext* restrict ltc)
+{
+    if (ltc->sb.length != 0)
+        _lexSbAdd(ltc);
+    _lexNewline(ltc);
+}
+
+void _lexNewline(_LexTContext* restrict ltc)
+{
+    ltc->pos.line++;
+    ltc->pos.col = 0;
+}
+
+void _lexSbAdd(_LexTContext* restrict ltc)
+{
+    listAdd(ltc->spans, fsCreate(sbGet(&ltc->sb), _lexGetPos(ltc)), FileSpan);
+    sbClear(&ltc->sb);
+}
+
+FilePos _lexGetPos(_LexTContext* restrict ltc)
+{
+    FilePos pos = ltc->pos;
+    pos.col -= ltc->sb.length;
+    return pos;
+}
+
+void _lexOnWhitespace(_LexTContext* restrict ltc)
+{
+    if (ltc->sb.length == 0)
+        return;
+    _lexSbAdd(ltc);
+}
+
+void _lexOnBracket(_LexTContext* restrict ltc, char chr)
+{
+    // end any currently readed token
+    if (ltc->sb.length != 0)
+        _lexSbAdd(ltc);
+    // read the bracket
+    listAdd(ltc->spans, fsCreate(strCLen(&chr, 1), ltc->pos), FileSpan);
+}
+
+int _lexOnEscape(_LexTContext* restrict ltc, int qchr)
+{
+    // reading the escaped character
+    char chr;
+    if ((chr = stGetChar(ltc->in)) < 0)
+        return chr;
+    ltc->pos.col++;
+
+    char toRead;
+    switch (chr)
+    {
+    // NULL is escaped with \0
+    case '0':
+        toRead = '\0';
+        break;
+    // newline is escaped with \n
+    case 'n':
+        toRead = '\n';
+        break;
+    // carrige return is escaped with \r
+    case 'r':
+        toRead = '\r';
+        break;
+    // tab is escaped with \t
+    case 't':
+        toRead = '\t';
+        break;
+    case 'x':
+        return _lexOnHexEscape(ltc, qchr);
+    // any other character after \ will be readed literaly (\\, \")
+    case '\n':
+        _lexNewline(ltc);
+    default:
+        toRead = chr;
+        break;
+    }
+
+    sbAdd(&ltc->sb, toRead);
+
+    return stGetChar(ltc->in);
+}
+
+int _lexOnHexEscape(_LexTContext* restrict ltc, int qchr)
+{
+    const int base = 16;
+    //_Static_assert(base < 36 || base >= 2, "base must be in range 2 - 36");
+    //_Static_assert(base == 16, "this algorithm may work unexpectedly with bases other than 16");
+
+    StringBuilder sb = sbCreate();
+
+    // read all characters in the base
+    int chr;
+    while ((chr = stGetChar(ltc->in)) >= 0)
+    {
+        ltc->pos.col++;
+        if (chr == qchr)
+            break;
+        char dig = _lexGetDigit(chr);
+        if (dig >= base)
+            break;
+        sbAdd(&sb, dig);
+    }
+
+    // convert the base characters into real characters
+    int i = 0;
+    if (sb.length & 1)
+    {
+        i = 1;
+        sbAdd(&ltc->sb, sb.buffer[0]);
+    }
+    for (; i < sb.length; i += 2)
+        sbAdd(&ltc->sb, sb.buffer[i] * base + sb.buffer[i + 1]);
+
+    sbFree(&sb);
+
+    // return the last unreaded character
+    return chr;
+}
+
+int _lexOnSlash(_LexTContext* restrict ltc)
+{
+    int chr;
+    if ((chr = stGetChar(ltc->in)) < 0)
+    {
+        sbAdd(&ltc->sb, '/');
+        return chr;
+    }
+
+    ltc->pos.col++;
+
+    if (ltc->sb.length != 0)
+        _lexSbAdd(ltc);
+
+    sbAdd(&ltc->sb, '/');
+
+    switch (chr)
+    {
+    case '/':
+        _lexReadLineComment(ltc);
+        break;
+    case '*':
+        _lexReadBlockComment(ltc);
+        break;
+    default:
+        return chr;
+    }
+
+    return stGetChar(ltc->in);
+}
+
+void _lexReadLineComment(_LexTContext* restrict ltc)
+{
+    sbAdd(&ltc->sb, '/');
+
+    int chr;
+    while ((chr = stGetChar(ltc->in)) >= 0)
+    {
+        ltc->pos.col++;
+        sbAdd(&ltc->sb, chr);
+
+        if (chr == '\n')
+        {
+            _lexSbAdd(ltc);
+            _lexNewline(ltc);
+            return;
+        }
+    }
+}
+
+void _lexReadBlockComment(_LexTContext* restrict ltc)
+{
+    sbAdd(&ltc->sb, '*');
+
+    FilePos tPos = ltc->pos;
+    tPos.col -= 2;
+
+    int chr;
+    while ((chr = stGetChar(ltc->in)) >= 0)
+    {
+        ltc->pos.col++;
+        sbAdd(&ltc->sb, chr);
+
+        if (chr == '\n')
+        {
+            _lexNewline(ltc);
+            continue;
+        }
+
+        if (chr == '/' && ltc->sb.buffer[ltc->sb.length - 2] == '*')
+        {
+            listAdd(ltc->spans, fsCreate(sbGet(&ltc->sb), tPos), FileSpan);
+            sbClear(&ltc->sb);
+            return;
+        }
+    }
 }

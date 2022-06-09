@@ -23,15 +23,15 @@ int main(int argc, char** argv)
 
     const char* filename = argv[1];
     String fn = strC(filename);
-    FILE* f;
-    if (fopen_s(&f, filename, "r")) {
+    Stream in;
+    if (stFileStream(&in, filename, "r")) {
       printf("Error: couldn't open file %s", filename);
       return EXIT_FAILURE;
     }
 
     List errs;
-    List tokens = lexLex(f, &errs, &fn);
-    fclose(f);
+    List tokens = lexLex(&in, &errs, &fn);
+    stClose(&in);
 
     size_t errors = 0;
     size_t warnings = 0;
