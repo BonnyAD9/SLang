@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     size_t infos = 0;
     size_t msgs = 0;
     listForEach(errs, ErrorSpan, t,
-        errPrintErrorSpan(stdout, t, filename);
+        errPrintErrorSpan(term_out, t, filename);
         printf("\n");
         msgs++;
         switch (t.level)
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     tree.filename = filename;
 
     listForEach(errs, ErrorToken, t,
-        errPrintErrorToken(stdout, t, filename);
+        errPrintErrorToken(term_out, t, filename);
         printf("\n");
         msgs++;
         switch (t.level)

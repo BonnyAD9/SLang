@@ -7,6 +7,7 @@
 #include "Token.h"
 #include "Terminal.h"
 #include "FilePos.h"
+#include "Stream.h"
 
 /**
  * @brief creates copy of the given string
@@ -28,7 +29,7 @@ ErrorSpan errCreateErrorSpan(ErrorLevel level, FileSpan span, const char* messag
     return error;
 }
 
-void errPrintErrorSpan(FILE* out, ErrorSpan token, const char* filename)
+void errPrintErrorSpan(Stream* out, ErrorSpan token, const char* filename)
 {
     const char* msgType;
     const char* msgColor;
@@ -53,7 +54,7 @@ void errPrintErrorSpan(FILE* out, ErrorSpan token, const char* filename)
     }
 
     fpPrint(out, token.span.pos);
-    fprintf(out, ":\t%s%s"term_COLRESET" %s\n\t%s%s"term_COLRESET"\n\t\x1b"term_BGREEN"help:\x1b[0m %s",
+    stPrintf(out, ":\t%s%s"term_COLRESET" %s\n\t%s%s"term_COLRESET"\n\t\x1b"term_BGREEN"help:\x1b[0m %s",
             msgColor, msgType, token.message,
             msgColor, token.span.str.c,
             token.help);
@@ -78,7 +79,7 @@ ErrorToken errCreateErrorToken(ErrorLevel level, Token token, const char* messag
     return t;
 }
 
-void errPrintErrorToken(FILE* out, ErrorToken error, const char* filename)
+void errPrintErrorToken(Stream* out, ErrorToken error, const char* filename)
 {
     const char *msgType;
     const char *msgColor;
@@ -103,11 +104,11 @@ void errPrintErrorToken(FILE* out, ErrorToken error, const char* filename)
     }
 
     fpPrint(out, error.token.pos);
-    fprintf(out, ":\t%s%s"term_COLRESET" %s\n\t%s",
+    stPrintf(out, ":\t%s%s"term_COLRESET" %s\n\t%s",
             msgColor, msgType, error.message,
             msgColor);
     tokenPrint(out, error.token);
-    fprintf(out, term_COLRESET"\n\t"term_BGREEN"help: "term_COLRESET" %s", error.help);
+    stPrintf(out, term_COLRESET"\n\t"term_BGREEN"help: "term_COLRESET" %s", error.help);
 }
 
 void errFreeErrorToken(ErrorToken error)

@@ -7,6 +7,7 @@
 #include "FileSpan.h"
 #include "FilePos.h"
 #include "String.h"
+#include "Stream.h"
 
 /**
  * @brief represents type of token
@@ -67,7 +68,7 @@ typedef struct Token
  * @param out stream to print to
  * @param token token which will be printed
  */
-void tokenPrint(FILE* out, Token token);
+void tokenPrint(Stream* out, Token token);
 
 /**
  * @brief creates token from file span

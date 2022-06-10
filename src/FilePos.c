@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "String.h"
+#include "Stream.h"
 
 FilePos fpCreate(size_t line, size_t col, String* filename)
 {
@@ -16,7 +17,7 @@ FilePos fpCreate(size_t line, size_t col, String* filename)
     return fp;
 }
 
-int fpPrint(FILE* out, FilePos fp)
+int fpPrint(Stream* out, FilePos fp)
 {
-    return fprintf(out, "%s:%zu:%zu", fp.filename->c, fp.line, fp.col);
+    return stPrintf(out, "%s:%zu:%zu", fp.filename->c, fp.line, fp.col);
 }

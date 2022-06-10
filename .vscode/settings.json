@@ -11,6 +11,8 @@
         "cmath": "c",
         "iterator": "c",
         "xstring": "c",
-        "xutility": "c"
+        "xutility": "c",
+        "stream.h": "c",
+        "filespan.h": "c"
     }
 }

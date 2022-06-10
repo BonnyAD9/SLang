@@ -9,6 +9,7 @@
 #include "FileSpan.h"
 #include "FilePos.h"
 #include "String.h"
+#include "Stream.h"
 
 void tokenFree(Token token)
 {
@@ -108,95 +109,95 @@ Token tokenFileSpanPart(T_TokenType type, FileSpan span, size_t start, size_t le
     return tokenStr(type, strCLen(span.str.c + start, length), span.pos);
 }
 
-void tokenPrint(FILE* out, Token token)
+void tokenPrint(Stream* out, Token token)
 {
     fpPrint(out, token.pos);
-    fprintf(out, ": ");
+    stPrintf(out, ": ");
     switch (token.type)
     {
     case T_UNDEFINED:
-        fprintf(out, "undefined\n");
+        stPrintf(out, "undefined\n");
         return;
     case T_INVALID:
-        fprintf(out, "invalid(%s)\n", token.string.c);
+        stPrintf(out, "invalid(%s)\n", token.string.c);
         return;
     case T_COMMENT_LINE:
-        fprintf(out, "lineComment(%s)\n", token.string.c);
+        stPrintf(out, "lineComment(%s)\n", token.string.c);
         return;
     case T_COMMENT_BLOCK:
-        fprintf(out, "blockComment(%s)\n", token.string.c);
+        stPrintf(out, "blockComment(%s)\n", token.string.c);
         return;
     case T_PUNCTUATION_BRACKET_OPEN:
-        fprintf(out, "[(%zu)\n", token.integer);
+        stPrintf(out, "[(%zu)\n", token.integer);
         return;
     case T_PUNCTUATION_BRACKET_CLOSE:
-        fprintf(out, "](%zu)\n", token.integer);
+        stPrintf(out, "](%zu)\n", token.integer);
         return;
     case T_IDENTIFIER_VARIABLE:
-        fprintf(out, "variable(%s)\n", token.string.c);
+        stPrintf(out, "variable(%s)\n", token.string.c);
         return;
     case T_IDENTIFIER_FUNCTION:
-        fprintf(out, "function(%s)\n", token.string.c);
+        stPrintf(out, "function(%s)\n", token.string.c);
         return;
     case T_IDENTIFIER_STRUCT:
-        fprintf(out, "struct(%s)\n", token.string.c);
+        stPrintf(out, "struct(%s)\n", token.string.c);
         return;
     case T_STORAGE_POINTER:
-        fprintf(out, "*\n");
+        stPrintf(out, "*\n");
         return;
     case T_STORAGE_CHAR:
-        fprintf(out, "char\n");
+        stPrintf(out, "char\n");
         return;
     case T_STORAGE_STRING:
-        fprintf(out, "string\n");
+        stPrintf(out, "string\n");
         return;
     case T_STORAGE_INT:
-        fprintf(out, "int\n");
+        stPrintf(out, "int\n");
         return;
     case T_STORAGE_FLOAT:
-        fprintf(out, "float\n");
+        stPrintf(out, "float\n");
         return;
     case T_STORAGE_BOOL:
-        fprintf(out, "bool\n");
+        stPrintf(out, "bool\n");
         return;
     case T_IDENTIFIER_PARAMETER:
-        fprintf(out, "parameter(%s)\n", token.string.c);
+        stPrintf(out, "parameter(%s)\n", token.string.c);
         return;
     case T_LITERAL_INTEGER:
-        fprintf(out, "integer(%zu)\n", token.integer);
+        stPrintf(out, "integer(%zu)\n", token.integer);
         return;
     case T_LITERAL_FLOAT:
-        fprintf(out, "float(%lf)\n", token.decimal);
+        stPrintf(out, "float(%lf)\n", token.decimal);
         return;
     case T_LITERAL_CHAR:
-        fprintf(out, "char(%c)\n", token.character);
+        stPrintf(out, "char(%c)\n", token.character);
         return;
     case T_LITERAL_STRING:
-        fprintf(out, "string(%s)\n", token.string.c);
+        stPrintf(out, "string(%s)\n", token.string.c);
         return;
     case T_LITERAL_BOOL:
-        fprintf(out, "bool(%s)\n", token.boolean ? "true" : "false");
+        stPrintf(out, "bool(%s)\n", token.boolean ? "true" : "false");
         return;
     case T_KEYWORD_DEF:
-        fprintf(out, "def\n");
+        stPrintf(out, "def\n");
         return;
     case T_KEYWORD_STRUCT:
-        fprintf(out, "struct\n");
+        stPrintf(out, "struct\n");
         return;
     case T_KEYWORD_SET:
-        fprintf(out, "set\n");
+        stPrintf(out, "set\n");
         return;
     case T_KEYWORD_SIGN:
-        fprintf(out, "sign\n");
+        stPrintf(out, "sign\n");
         return;
     case T_OPERATOR_NOTHING:
-        fprintf(out, "_\n");
+        stPrintf(out, "_\n");
         return;
     case T_ERROR:
-        fprintf(out, "error\n");
+        stPrintf(out, "error\n");
         return;
     default:
-        fprintf(out, "unknown\n");
+        stPrintf(out, "unknown\n");
         return;
     }
 }

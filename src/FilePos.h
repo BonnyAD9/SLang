@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "String.h"
+#include "Stream.h"
 
 typedef struct FilePos
 {
@@ -30,6 +31,6 @@ FilePos fpCreate(size_t line, size_t col, String* filename);
  * @param fp what to print
  * @return int number of printed characters
  */
-int fpPrint(FILE* out, FilePos fp);
+int fpPrint(Stream* out, FilePos fp);
 
 #endif // fp_FILE_POS_INCLUDED

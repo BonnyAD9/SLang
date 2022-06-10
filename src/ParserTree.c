@@ -2,11 +2,11 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <assert.h>
 
 #include "Token.h"
 #include "List.h"
+#include "Stream.h"
 
 /**
  * @brief prints the given parser node
@@ -15,7 +15,7 @@
  * @param node node to print
  * @param depth depth of the node
  */
-void _ptPrintNode(FILE* out, ParserNode node, size_t depth, const char* filename);
+void _ptPrintNode(Stream* out, ParserNode node, size_t depth, const char* filename);
 
 ParserTree ptCreate()
 {
@@ -27,82 +27,82 @@ ParserTree ptCreate()
     return tree;
 }
 
-void ptPrint(FILE *out, ParserTree tree)
+void ptPrint(Stream* out, ParserTree tree)
 {
-    fprintf(out, "%s\n", tree.filename);
+    stPrintf(out, "%s\n", tree.filename);
     listForEach(tree.nodes, ParserNode, n,
         _ptPrintNode(out, n, 1, tree.filename);
     );
 }
 
-void _ptPrintNode(FILE *out, ParserNode node, size_t depth, const char* filename)
+void _ptPrintNode(Stream* out, ParserNode node, size_t depth, const char* filename)
 {
     for (size_t i = 0; i < depth; i++)
-        fprintf(out, "\x1b[9%zum|", i % 8 + 1);
+        stPrintf(out, "\x1b[9%zum|", i % 8 + 1);
 
     switch (node.type)
     {
     case P_FUNCTION_CALL:
-        fprintf(out, "FUNCTION_CALL\n");
+        stPrintf(out, "FUNCTION_CALL\n");
         break;
     case P_IDENTIFIER:
-        fprintf(out, "IDENTIFIER(");
+        stPrintf(out, "IDENTIFIER(");
         tokenPrint(out, *node.token);
-        fprintf(out, ")\n");
+        stPrintf(out, ")\n");
         break;
     case P_NOTHING:
-        fprintf(out, "NOTHING\n");
+        stPrintf(out, "NOTHING\n");
         break;
     case P_ERROR:
-        fprintf(out, "ERROR\n");
+        stPrintf(out, "ERROR\n");
         break;
     case P_VALUE_INTEGER:
-        fprintf(out, "VALUE_INTEGER(");
+        stPrintf(out, "VALUE_INTEGER(");
         tokenPrint(out, *node.token);
-        fprintf(out, ")\n");
+        stPrintf(out, ")\n");
         break;
     case P_VALUE_FLOAT:
-        fprintf(out, "VALUE_FLOAT(");
+        stPrintf(out, "VALUE_FLOAT(");
         tokenPrint(out, *node.token);
-        fprintf(out, ")\n");
+        stPrintf(out, ")\n");
         break;
     case P_VALUE_CHAR:
-        fprintf(out, "VALUE_CHAR(");
+        stPrintf(out, "VALUE_CHAR(");
         tokenPrint(out, *node.token);
-        fprintf(out, ")\n");
+        stPrintf(out, ")\n");
         break;
     case P_VALUE_STRING:
-        fprintf(out, "VALUE_STRING(");
+        stPrintf(out, "VALUE_STRING(");
         tokenPrint(out, *node.token);
-        fprintf(out, ")\n");
+        stPrintf(out, ")\n");
         break;
     case P_VALUE_BOOL:
-        fprintf(out, "VALUE_BOOL(");
+        stPrintf(out, "VALUE_BOOL(");
         tokenPrint(out, *node.token);
-        fprintf(out, ")\n");
+        stPrintf(out, ")\n");
         break;
     case P_FUNCTION_DEFINITION:
-        fprintf(out, "FUNCTION_DEFINITION\n");
+        stPrintf(out, "FUNCTION_DEFINITION\n");
         break;
     case P_VARIABLE_SETTER:
-        fprintf(out, "VARIABLE_SETTER(");
+        stPrintf(out, "VARIABLE_SETTER(");
         tokenPrint(out, *node.token);
-        fprintf(out, ")\n");
+        stPrintf(out, ")\n");
         break;
     case P_FUNCTION_SETTER:
-        fprintf(out, "FUNCTION_SETTER(");
+        stPrintf(out, "FUNCTION_SETTER(");
         tokenPrint(out, *node.token);
-        fprintf(out, ")\n");
+        stPrintf(out, ")\n");
         break;
     default:
-        fprintf(out, "OTHER\n");
+        stPrintf(out, "OTHER\n");
         break;
     }
 
     listForEach(node.nodes, ParserNode, n,
         _ptPrintNode(out, n, depth + 1, filename);
     );
-    fprintf(out, "\x1b[0m");
+    stPrintf(out, "\x1b[0m");
 }
 
 void ptFree(ParserTree tree)

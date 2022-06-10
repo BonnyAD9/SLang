@@ -2,10 +2,10 @@
 #define err_ERRORS_INCLUDED
 
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "FileSpan.h"
 #include "Token.h"
+#include "Stream.h"
 
 typedef enum ErrorLevel
 {
@@ -48,7 +48,7 @@ ErrorSpan errCreateErrorSpan(ErrorLevel level, FileSpan span, const char* messag
  * @param error error to print
  * @param filename file in which this span is
  */
-void errPrintErrorSpan(FILE* out, ErrorSpan error, const char* filename);
+void errPrintErrorSpan(Stream* out, ErrorSpan error, const char* filename);
 
 /**
  * @brief frees error span
@@ -75,7 +75,7 @@ ErrorToken errCreateErrorToken(ErrorLevel level, Token token, const char* messag
  * @param error error to print
  * @param filename file in which the token is
  */
-void errPrintErrorToken(FILE* out, ErrorToken error, const char* filename);
+void errPrintErrorToken(Stream* out, ErrorToken error, const char* filename);
 
 /**
  * @brief frees the given error token

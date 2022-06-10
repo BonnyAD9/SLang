@@ -2,10 +2,10 @@
 #define PARSER_TREE_INCLUDED
 
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "Token.h"
 #include "List.h"
+#include "Stream.h"
 
 typedef enum ParserNodeType
 {
@@ -51,7 +51,7 @@ typedef struct ParserTree
  * @param out where to print
  * @param tree tree to print
  */
-void ptPrint(FILE* out, ParserTree tree);
+void ptPrint(Stream* out, ParserTree tree);
 
 /**
  * @brief Create a Parser Tree object
