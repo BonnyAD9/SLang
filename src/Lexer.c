@@ -16,13 +16,27 @@
 #include "Stream.h"
 #include "StringBuilder.h"
 
+#define _lexError(context, level, msg, help) listAdd((context)->err, errCreateErrorSpan(level, (context)->span, strLit(msg), strLit(help)), ErrorSpan)
+
+typedef struct _LexLContext
+{
+    List err;
+    ListIterator spans;
+    FileSpan span;
+    List tokens;
+    long nest;
+    long defd;
+    long parm;
+    long strc;
+} _LexLContext;
+
 typedef struct _LexTContext
 {
     Stream* in;
     FilePos pos;
     StringBuilder sb;
     List spans;
-    List errors;
+    List err;
 } _LexTContext;
 
 /**
@@ -40,23 +54,22 @@ List _lexTokenize(Stream* in, String* filename);
  * @param endptr pointer to the first non-digit char
  * @param base base in which to convert
  * @param overflow this is set to true if the integer overflows the long long limit
+ * @param digits add here 1 for each digit
  * @return long readed integer
  */
-long long _lexReadInt(char* str, char** endptr, long long base, _Bool* overflow);
+long long _lexReadInt(char* str, char** endptr, long long base, _Bool* overflow, size_t* digits);
 
 /**
- * @brief checks the keyword and adds it to the list
+ * @brief adds keyword token
  * 
- * @param kw keyword to check for
- * @param type type of the keyword to add
- * @param span span to check
- * @param tokens list of tokens for valid keyword
- * @param errors list of errors for invalid keyword
- * @return 0 keyword not matched
- * @return 1 keyword matched successfully
- * @return -1 keyword matced unsuccessfully
+ * @param llc context
+ * @param kw keyword to check
+ * @param type type of the keyword
+ * @param nest nest flag or NULL
+ * @param nestOff offset for nest flag
+ * @return _Bool true -> keyword added, false -> not the keyword
  */
-int _lexCheckKeyword(const char* kw, T_TokenType type, FileSpan span, List* tokens, List* errors);
+_Bool _lexCheckKeyword(_LexLContext* restrict llc, String kw, T_TokenType type, long* nest, long nestOff);
 
 /**
  * @brief converts the given char to numnerical digit
@@ -65,6 +78,143 @@ int _lexCheckKeyword(const char* kw, T_TokenType type, FileSpan span, List* toke
  * @return long the number it represents
  */
 long long _lexGetDigit(char digit);
+
+/**
+ * @brief adds open bracket token and works with defd
+ * 
+ * @param llc context
+ */
+void _lexOnTOpen(_LexLContext* restrict llc);
+
+/**
+ * @brief adds close bracket token and resets nests
+ * 
+ * @param llc context
+ */
+void _lexOnTClose(_LexLContext* restrict llc);
+
+/**
+ * @brief skips comment token or returns false
+ * 
+ * @param llc context
+ * @return _Bool true -> token skiped, false -> token not comment
+ */
+_Bool _lexOnTComment(_LexLContext* restrict llc);
+
+/**
+ * @brief adds string literal ltoken
+ * 
+ * @param llc context
+ */
+void _lexOnTString(_LexLContext* restrict llc);
+
+/**
+ * @brief adds char literal token
+ * 
+ * @param llc context
+ */
+void _lexOnTChar(_LexLContext* restrict llc);
+
+/**
+ * @brief adds nothing token
+ * 
+ * @param llc context
+ * @return _Bool true -> added, flase -> not nothing token
+ */
+_Bool _lexOnT_(_LexLContext* restrict llc);
+
+/**
+ * @brief adds number literal token
+ * 
+ * @param llc context
+ * @return _Bool true -> added, false -> not number token
+ */
+_Bool _lexOnTNumber(_LexLContext* restrict llc);
+
+/**
+ * @brief adds integer literal token
+ * 
+ * @param llc context
+ * @param num parsed number
+ * @param overflow if overflow occured
+ */
+void _lexOnTInt(_LexLContext* restrict llc, intmax_t num, _Bool overflow);
+
+/**
+ * @brief adds float literal token
+ * 
+ * @param llc context
+ * @param num parsed integer part
+ * @param isNegative true of the number is negative
+ * @param overflow if overflow occured
+ * @param digits number of digits of the integer part
+ * @param c points to the decimal part
+ */
+void _lexOnTFloat(_LexLContext* restrict llc, intmax_t num, _Bool isNegative, _Bool overflow, size_t digits, char* c);
+
+/**
+ * @brief adds integer literal with special base
+ * 
+ * @param llc context
+ * @param base the base
+ * @param c wtart of the integer
+ * @param isNegative if the number is negative
+ */
+void _lexOnTBase(_LexLContext* restrict llc, intmax_t base, char* c, _Bool isNegative);
+
+/**
+ * @brief adds keyword token
+ * 
+ * @param llc context
+ * @return _Bool true -> added, false -> not a keyword
+ */
+_Bool _lexOnTKeyword(_LexLContext* restrict llc);
+
+/**
+ * @brief adds bool literal token
+ * 
+ * @param llc context
+ * @return _Bool true -> added, false -> not a bool literal
+ */
+_Bool _lexOnTBool(_LexLContext* restrict llc);
+
+/**
+ * @brief adds defd specified token
+ * 
+ * @param llc context
+ */
+void _lexOnDefd(_LexLContext* restrict llc);
+
+/**
+ * @brief adds storage token
+ * 
+ * @param llc context
+ */
+void _lexOnStorage(_LexLContext* restrict llc);
+
+/**
+ * @brief adds storage token
+ * 
+ * @param llc context
+ * @param nme token representation
+ * @param type type of the token
+ * @return _Bool true -> added, false -> not the storage
+ */
+_Bool _lexCheckStorage(_LexLContext* restrict llc, String nme, T_TokenType type);
+
+/**
+ * @brief adds parm specified token
+ * 
+ * @param llc context
+ */
+void _lexOnParm(_LexLContext* restrict llc);
+
+/**
+ * @brief adds strc specified token
+ * 
+ * @param llc context
+ */
+void _lexOnStrc(_LexLContext* llc);
 
 /**
  * @brief adds currentyl readed token if any and moves to the next line
@@ -162,353 +312,127 @@ List lexLex(Stream* in, List* errors, String* filename)
     assert(errors);
 
     // read from file and prepare output lists
-    List list = _lexTokenize(in, filename);
-    List errs = listNew(ErrorSpan);
-    List tokens = listNew(Token);
+    List spans = _lexTokenize(in, filename);
 
-    long long nest = 0;
-    long long defd = -1;
-    long long parm = -1;
-    long long strc = -1;
-
-    for (size_t i = 0; i < list.length; i++)
+    _LexLContext context =
     {
-        // get tje string to examine
-        FileSpan span = listGet(list, i, FileSpan);
+        .err = listNew(ErrorSpan),
+        .spans = liCreate(&spans),
+        .tokens = listNew(Token),
+        .nest = 0,
+        .defd = -1,
+        .parm = -1,
+        .strc = -1,
+    };
+
+    _LexLContext* restrict llc = &context;
+
+    while (liCan(&llc->spans))
+    {
+        // get the string to examine
+        llc->span = liGet(&llc->spans, FileSpan);
+        liMove(&llc->spans);
+
         // check for tokens that can be recognized by their first few characters
-        switch (span.str.c[0])
+        switch (llc->span.str.c[0])
         {
         // this case should never happen
         case 0:
-            dtPrintf("lex: empty token at position :%zu:%zu", span.pos.line, span.pos.col);
-            fsFree(span);
+            dtPrintf("lex: empty token at position :%zu:%zu", llc->span.pos.line, llc->span.pos.col);
+            fsFree(llc->span);
             continue;
         // [ is always token by itself
         case '[':
-            assert(span.str.length == 1);
-            if (defd == nest)
-            {
-                Token* t = listGetP(tokens, tokens.length - 1);
-                if (t->type == T_IDENTIFIER_STRUCT)
-                    t->type = T_IDENTIFIER_FUNCTION;
-            }
-            listAdd(tokens, tokenInt(T_PUNCTUATION_BRACKET_OPEN, nest, span.pos), Token);
-            fsFree(span);
-            nest++;
+            _lexOnTOpen(llc);
             continue;
         // ] is always token by itself
         case ']':
-            assert(span.str.length == 1);
-            if (nest == defd || nest == parm || nest == strc)
-            {
-                defd = -1;
-                parm = -1;
-                strc = -1;
-            }
-            if (nest == 0)
-            {
-                listAdd(errs, errCreateErrorSpan(E_ERROR, span, "missing [ before ]", "add opening bracket somwhere before this closing one"), ErrorSpan)
-                continue;
-            }
-            nest--;
-            listAdd(tokens, tokenInt(T_PUNCTUATION_BRACKET_CLOSE, nest, span.pos), Token);
-            fsFree(span);
+            _lexOnTClose(llc);
             continue;
         // check for comments (starts with // or /*)
         case '/':
-            switch(span.str.c[1])
-            {
-            // line comment
-            case '/':
-                //listAdd(tokens, fileSpanTokenPart(COMMENT_LINE, span, 2, span.length - 2), Token);
-                fsFree(span);
+            if (_lexOnTComment(llc))
                 continue;
-            // block comment
-            case '*':
-                // check if the block comment is closed
-                if (span.str.c[span.str.length - 1] != '/' || span.str.c[span.str.length - 2] != '*')
-                {
-                    listAdd(errs, errCreateErrorSpan(E_ERROR, span, "block comment is not closed", "close it with */"), ErrorSpan);
-                    continue;
-                }
-                //listAdd(tokens, fileSpanTokenPart(COMMENT_BLOCK, span, 2, span.length < 5 ? 0 : span.length - 4), Token);
-                fsFree(span);
-                continue;
-            default:
-                break;
-            }
             break;
         // string literal
         case '"':
-            // check if the string literal is ended
-            if (span.str.length == 1 || span.str.c[span.str.length - 1] != '"')
-            {
-                listAdd(errs, errCreateErrorSpan(E_ERROR, span, "string literal is not closed", "try adding closing \""), ErrorSpan);
-                continue;
-            }
-            listAdd(tokens, tokenFileSpanPart(T_LITERAL_STRING, span, 1, span.str.length - 2), Token);
-            fsFree(span);
+            _lexOnTString(llc);
             continue;
         // char literal
         case '\'':
-            // check if the char literal has only one character
-            if (span.str.length != 3)
-            {
-                listAdd(errs, errCreateErrorSpan(E_ERROR, span, "char literal can only contain one character", "maybe you want to use string (\")"), ErrorSpan);
-                continue;
-            }
-            // check if the char literal is closed
-            else if (span.str.c[3] != '\'')
-            {
-                listAdd(errs, errCreateErrorSpan(E_ERROR, span, "char literal is not closed", "try adding closing '"), ErrorSpan);
-                continue;
-            }
-            listAdd(tokens, tokenChar(T_LITERAL_CHAR, span.str.c[1], span.pos), Token);
-            fsFree(span);
+            _lexOnTChar(llc);
             continue;
         // nothing operator
         case '_':
-            // check if it is only the operator
-            if (span.str.length != 1)
-                break;
-            listAdd(tokens, tokenCreate(T_OPERATOR_NOTHING, span.pos), Token);
-            fsFree(span);
-            continue;
+            if (_lexOnT_(llc))
+                continue;
+            break;
         default:
             break;
         }
+
         // checking numbers
-        if (isdigit(span.str.c[0]) || (span.str.c[0] == '-' && isdigit(span.str.c[1])))
-        {
-            char* c = span.str.c;
-            _Bool overflow = 0;
-            // check for negative values
-            _Bool isNegative = *c == '-';
-            // read whole part values
-            intmax_t num = _lexReadInt(c + isNegative, &c, 10, &overflow);
-            switch (*c)
-            {
-            // if it doesn't continue, it is integer
-            case 0:
-                listAdd(tokens, tokenInt(T_LITERAL_INTEGER, isNegative ? -num : num, span.pos), Token);
-                if (overflow)
-                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
-                else
-                    fsFree(span);
-                continue;
-            // if there is . read decimal values
-            case '.':
-            {
-                // read decimal values
-                double decimal = num;
-                size_t digits = 0;
-                // to preserve the magnitude of the number read it again as double
-                if (overflow)
-                {
-                    decimal = 0;
-                    for (c = span.str.c + isNegative; *c && isdigit(*c); c++, digits++)
-                        decimal = decimal * 10 + *c - '0';
-                }
-                double div = 10;
-                for (c++; *c && isdigit(*c); c++, div *= 10, digits++)
-                    decimal += (*c - '0') / div;
-                // if this is not end break into error
-                if (*c)
-                    break;
-                listAdd(tokens, tokenFloat(T_LITERAL_FLOAT, isNegative ? -decimal : decimal, span.pos), Token);
-                // check for too large or precise numbers
-                if (isinf(decimal))
-                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large and will be trated as infinity", "use different type (string?)"), ErrorSpan) // there shouldn't be ;
-                else if (digits > lex_DECIMAL_WARNING_LIMIT)
-                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number has too many digits and may be rounded", "if you want all the digits maybe use string"), ErrorSpan) // there shouldn't be ;
-                else
-                    fsFree(span);
-                continue;
-            }
-            // reading hexadecimal numbers
-            case 'x':
-                num = _lexReadInt(c + 1, &c, 16, &overflow);
-                if (*c)
-                    break;
-                listAdd(tokens, tokenInt(T_LITERAL_INTEGER, isNegative ? -num : num, span.pos), Token);
-                if (overflow)
-                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
-                        else fsFree(span);
-                continue;
-            // reading binary numbers
-            case 'b':
-                num = _lexReadInt(c + 1, &c, 2, &overflow);
-                if (*c)
-                    break;
-                listAdd(tokens, tokenInt(T_LITERAL_INTEGER, isNegative ? -num : num, span.pos), Token);
-                if (overflow)
-                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
-                        else fsFree(span);
-                continue;
-            // reding numbers with the specified base
-            case 'z':
-                if (num < 2 || num > 36)
-                {
-                    listAdd(errs, errCreateErrorSpan(E_ERROR, span, "base must be between 2 and 36 (inclusive)", "change the number before z to be in that range"), ErrorSpan);
-                    continue;
-                }
-                num = _lexReadInt(c + 1, &c, num, &overflow);
-                if (*c)
-                    break;
-                listAdd(tokens, tokenInt(T_LITERAL_INTEGER, isNegative ? -num : num, span.pos), Token);
-                if (overflow)
-                    listAdd(errs, errCreateErrorSpan(E_WARNING, span, "number is too large", "make the number smaller or use defferent type"), ErrorSpan) // there shouldn't be ;
-                        else fsFree(span);
-                continue;
-            // otherwise break into error
-            default:
-                break;
-            }
-            listAdd(errs, errCreateErrorSpan(E_ERROR, span, "invalid number literal", "number literals cannot contain other characters than digits and single ."), ErrorSpan);
+        if (_lexOnTNumber(llc))
             continue;
-        }
 
         // tokens that are not enclosed in [] are incorrect
-        if (nest == 0)
+        if (llc->nest == 0)
         {
-            listAdd(errs, errCreateErrorSpan(E_ERROR, span, "cannot use identifiers directly", "try ecapsulating it in []"), ErrorSpan);
+            _lexError(llc, E_ERROR, "cannot use identifiers directly", "try ecapsulating it in []");
             continue;
         }
 
-#define __lexCheckKeyword(__kws, __kwe) if(_lexCheckKeyword(__kws,__kwe,span,&tokens,&errs))continue
-        // check for the keywords
-        __lexCheckKeyword("set", T_KEYWORD_SET);
-        switch (_lexCheckKeyword("struct", T_KEYWORD_STRUCT, span, &tokens, &errs))
-        {
-        case 0:
-            break;
-        case 1:
-            if (defd == -1 && parm == -1 && strc == -1)
-                strc = nest;
+        if (_lexOnTKeyword(llc))
             continue;
-        default:
-            continue;
-        }
-        switch (_lexCheckKeyword("sign", T_KEYWORD_SIGN, span, &tokens, &errs))
-        {
-        case 0:
-            break;
-        case 1:
-            if (defd == -1 && parm == -1 && strc == -1)
-                defd = nest;
-            continue;
-        default:
-            continue;
-        }
-        switch (_lexCheckKeyword("def", T_KEYWORD_DEF, span, &tokens, &errs))
-        {
-        case 0:
-            break;
-        case 1:
-            if (defd == -1 && parm == -1 && strc == -1)
-                parm = nest + 1;
-            continue;
-        default:
-            continue;
-        }
-#undef __checkKeyword
 
-        if (strcmp(span.str.c, "true") == 0)
-        {
-            listAdd(tokens, tokenBool(T_LITERAL_BOOL, 1, span.pos), Token);
+        if (_lexOnTBool(llc))
             continue;
-        }
-        if (strcmp(span.str.c, "false") == 0)
+
+        if (llc->defd != -1)
         {
-            listAdd(tokens, tokenBool(T_LITERAL_BOOL, 0, span.pos), Token);
+            _lexOnDefd(llc);
             continue;
         }
 
-        if (defd != -1)
+        if (llc->parm != -1)
         {
-            if (defd == nest)
-            {
-                Token* t = listGetP(tokens, tokens.length - 1);
-                if (t->type == T_IDENTIFIER_STRUCT)
-                    t->type = T_IDENTIFIER_VARIABLE;
-            }
-#define __lexCheckStorage(__str, __tpe) if(strcmp(span.str.c, __str) == 0){Token __t=tokenCreate(__tpe, span.pos);listAddP(&tokens, &__t);continue;}
-            __lexCheckStorage("*", T_STORAGE_POINTER);
-            __lexCheckStorage("char", T_STORAGE_CHAR);
-            __lexCheckStorage("string", T_STORAGE_STRING);
-            __lexCheckStorage("int", T_STORAGE_INT);
-            __lexCheckStorage("float", T_STORAGE_FLOAT);
-            __lexCheckStorage("bool", T_STORAGE_BOOL);
-#undef __checkStorage
-            listAdd(tokens, tokenFileSpan(T_IDENTIFIER_STRUCT, span), Token);
+            _lexOnParm(llc);
             continue;
         }
 
-        if (parm != -1)
+        if (llc->strc != -1)
         {
-            if (parm > nest && listGet(tokens, tokens.length - 1, Token).type == T_PUNCTUATION_BRACKET_OPEN)
-            {
-                listAdd(tokens, tokenFileSpan(T_IDENTIFIER_STRUCT, span), Token);
-                continue;
-            }
-            listAdd(tokens, tokenFileSpan(T_IDENTIFIER_PARAMETER, span), Token);
+            _lexOnStrc(llc);
             continue;
-        }
-
-        if (strc != -1)
-        {
-            if (strc == nest)
-            {
-                listAdd(tokens, tokenFileSpan(T_IDENTIFIER_STRUCT, span), Token);
-                continue;
-            }
-            switch (listGet(tokens, tokens.length - 1, Token).type)
-            {
-            case T_PUNCTUATION_BRACKET_OPEN:
-#define __checkStorage(__str, __tpe) if(strcmp(span.str.c, __str) == 0){Token __t=tokenCreate(__tpe, span.pos);listAddP(&tokens, &__t);continue;}
-                __lexCheckStorage("*", T_STORAGE_POINTER);
-                __lexCheckStorage("char", T_STORAGE_CHAR);
-                __lexCheckStorage("string", T_STORAGE_STRING);
-                __lexCheckStorage("int", T_STORAGE_INT);
-                __lexCheckStorage("float", T_STORAGE_FLOAT);
-                __lexCheckStorage("bool", T_STORAGE_BOOL);
-#undef __checkStorage
-                listAdd(tokens, tokenFileSpan(T_IDENTIFIER_STRUCT, span), Token);
-                continue;
-            default:
-                listAdd(tokens, tokenFileSpan(T_IDENTIFIER_PARAMETER, span), Token);
-                continue;
-            }
         }
 
         // determine token type based on previous tokens
-        switch (listGet(tokens, tokens.length - 1, Token).type)
+        switch (listGet(llc->tokens, llc->tokens.length - 1, Token).type)
         {
         // tokens directly after [ are function identifiers
         case T_PUNCTUATION_BRACKET_OPEN:
-            listAdd(tokens, tokenFileSpan(T_IDENTIFIER_FUNCTION, span), Token);
+            listAdd(llc->tokens, tokenFileSpan(T_IDENTIFIER_FUNCTION, llc->span), Token);
             continue;
         // other tokens are just variable identifiers
         default:
-            listAdd(tokens, tokenFileSpan(T_IDENTIFIER_VARIABLE, span), Token);
+            listAdd(llc->tokens, tokenFileSpan(T_IDENTIFIER_VARIABLE, llc->span), Token);
             continue;
         }
     }
 
-    if (nest > 0)
-        listAdd(errs, errCreateErrorSpan(E_ERROR, fsCreate(strLit("]"), 
-            listGet(list, list.length - 1, FileSpan).pos
-            ), "missing 1 or more closing brackets", "try adding ]"), ErrorSpan);
+    if (llc->nest > 0)
+        listAdd(llc->err, errCreateErrorSpan(E_ERROR, fsCreate(strLit("]"), liGet(&llc->spans, FileSpan).pos), strLit("missing 1 or more closing brackets"), strLit("try adding ]")), ErrorSpan);
 
     // free the list of strings
-    listFree(list);
+    listFree(spans);
+
     // if errors is not null set them, otherwise free them
     if (errors)
-        *errors = errs;
+        *errors = llc->err;
     else
-        listDeepFree(list, ErrorSpan, t, errFreeErrorSpan(t));
+        listDeepFree(llc->err, ErrorSpan, t, errFreeErrorSpan(t));
 
-    return tokens;
+    return llc->tokens;
 }
 
 intmax_t _lexGetDigit(char digit)
@@ -526,15 +450,16 @@ intmax_t _lexGetDigit(char digit)
     return digit - 'a' + 10;
 }
 
-intmax_t _lexReadInt(char* str, char** endptr, intmax_t base, _Bool* overflow)
+intmax_t _lexReadInt(char* str, char** endptr, intmax_t base, _Bool* overflow, size_t* digits)
 {
     assert(str);
     assert(base <= 36 && base >= 2);
 
+    size_t digs = 0;
     intmax_t num = 0;
     intmax_t digit;
     _Bool ovfl = 0;
-    for (; *str && (digit = _lexGetDigit(*str)) < base; str++)
+    for (; *str && (digit = _lexGetDigit(*str)) < base; str++, digs++)
     {
         if (num > INTMAX_MAX / base || (num == INTMAX_MAX / base && digit > INTMAX_MAX % base))
             ovfl = 1;
@@ -544,28 +469,352 @@ intmax_t _lexReadInt(char* str, char** endptr, intmax_t base, _Bool* overflow)
         *endptr = str;
     if (overflow)
         *overflow = ovfl;
+    if (digits)
+        *digits += digs;
     return num;
 }
 
-int _lexCheckKeyword(const char* kw, T_TokenType type, FileSpan span, List* tokens, List* errors)
+_Bool _lexCheckKeyword(_LexLContext* restrict llc, String kw, T_TokenType type, long* nest, long nestOff)
 {
-    assert(kw);
-    assert(tokens);
-    assert(errors);
+    if (!strEquals(kw, llc->span.str))
+        return 0;
 
-    if (strcmp(kw, span.str.c) == 0)
+    listAdd(llc->tokens, tokenCreate(type, llc->span.pos), Token);
+    if (!nest)
+        return 1;
+
+    if (llc->defd == -1 && llc->parm == -1 && llc->strc == -1)
+        *nest = llc->nest + nestOff;
+    
+    return 1;
+}
+
+void _lexOnTOpen(_LexLContext* restrict llc)
+{
+    assert(llc->span.str.length == 1);
+
+    if (llc->defd == llc->nest)
     {
-        if (listGet(*tokens, tokens->length - 1, Token).type != T_PUNCTUATION_BRACKET_OPEN)
+        Token* t = listGetP(llc->tokens, llc->tokens.length - 1);
+        if (t->type == T_IDENTIFIER_STRUCT)
+            t->type = T_IDENTIFIER_FUNCTION;
+    }
+
+    listAdd(llc->tokens, tokenInt(T_PUNCTUATION_BRACKET_OPEN, llc->nest, llc->span.pos), Token);
+    fsFree(llc->span);
+    
+    llc->nest++;
+}
+
+void _lexOnTClose(_LexLContext* restrict llc)
+{
+    assert(llc->span.str.length == 1);
+
+    if (llc->nest == llc->defd || llc->nest == llc->parm || llc->nest == llc->strc)
+    {
+        llc->defd = -1;
+        llc->parm = -1;
+        llc->strc = -1;
+    }
+
+    if (llc->nest == 0)
+    {
+        _lexError(llc, E_ERROR, "missing [ before ]", "");
+        return;
+    }
+
+    llc->nest--;
+
+    listAdd(llc->tokens, tokenInt(T_PUNCTUATION_BRACKET_CLOSE, llc->nest, llc->span.pos), Token);
+    fsFree(llc->span);
+}
+
+_Bool _lexOnTComment(_LexLContext* restrict llc)
+{
+    switch(llc->span.str.c[1])
+    {
+    // line comment
+    case '/':
+        //listAdd(tokens, fileSpanTokenPart(COMMENT_LINE, span, 2, span.length - 2), Token);
+        fsFree(llc->span);
+        return 1;
+    // block comment
+    case '*':
+        // check if the block comment is closed
+        if (llc->span.str.c[llc->span.str.length - 1] != '/' || llc->span.str.c[llc->span.str.length - 2] != '*')
         {
-            ErrorSpan t = errCreateErrorSpan(E_ERROR, span, "keyword must be used as function", "try encapsulating the action in []");
-            listAddP(errors, &t);
-            return -1;
+            _lexError(llc, E_ERROR, "block comment is not closed", "close comment with */");
+            return 1;
         }
-        Token t = tokenCreate(type, span.pos);
-        listAddP(tokens, &t);
+        //listAdd(tokens, fileSpanTokenPart(COMMENT_BLOCK, span, 2, span.length < 5 ? 0 : span.length - 4), Token);
+        fsFree(llc->span);
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+void _lexOnTString(_LexLContext* restrict llc)
+{
+    // check if the string literal is ended
+    if (llc->span.str.length == 1 || llc->span.str.c[llc->span.str.length - 1] != '"')
+    {
+        _lexError(llc, E_ERROR, "string literal is not closed", "try close literal with \"");
+        return;
+    }
+
+    listAdd(llc->tokens, tokenFileSpanPart(T_LITERAL_STRING, llc->span, 1, llc->span.str.length - 2), Token);
+    fsFree(llc->span);
+}
+
+void _lexOnTChar(_LexLContext* restrict llc)
+{
+    // check if the char literal has only one character
+    if (llc->span.str.length != 3)
+    {
+        _lexError(llc, E_ERROR, "char literal can only contain one character", "maybe you want to use string (\")");
+        return;
+    }
+
+    // check if the char literal is closed
+    else if (llc->span.str.c[2] != '\'')
+    {
+        _lexError(llc, E_ERROR, "char literal is not closed", "try adding closing '");
+        return;
+    }
+
+    listAdd(llc->tokens, tokenChar(T_LITERAL_CHAR, llc->span.str.c[1], llc->span.pos), Token);
+    fsFree(llc->span);
+}
+
+_Bool _lexOnT_(_LexLContext* restrict llc)
+{
+    // check if it is only the operator
+    if (llc->span.str.length != 1)
+        return 0;
+
+    listAdd(llc->tokens, tokenCreate(T_OPERATOR_NOTHING, llc->span.pos), Token);
+    fsFree(llc->span);
+    return 1;
+}
+
+_Bool _lexOnTNumber(_LexLContext* restrict llc)
+{
+    if (!isdigit(llc->span.str.c[0]) && (llc->span.str.c[0] != '-' || !isdigit(llc->span.str.c[1])))
+        return 0;
+
+    char* c = llc->span.str.c;
+    _Bool overflow = 0;
+    // check for negative values
+    _Bool isNegative = *c == '-';
+    size_t digits = 0;
+    // read whole part values
+    intmax_t num = _lexReadInt(c + isNegative, &c, 10, &overflow, &digits);
+
+    switch (*c)
+    {
+    // if it doesn't continue, it is integer
+    case 0:
+        _lexOnTInt(llc, isNegative ? -num : num, overflow);
+        return 1;
+    // if there is . read decimal values
+    case '.':
+        _lexOnTFloat(llc, num, isNegative, overflow, digits, c);
+        return 1;
+    // reading hexadecimal numbers
+    case 'x':
+        _lexOnTBase(llc, 16, c, isNegative);
+        return 1;
+    // reading binary numbers
+    case 'b':
+        _lexOnTBase(llc, 2, c, isNegative);
+        return 1;
+    // reding numbers with the specified base
+    case 'z':
+        _lexOnTBase(llc, num, c, isNegative);
+        return 1;
+    // otherwise break into error
+    default:
+        _lexError(llc, E_ERROR, "integer literal followed by characters", "remove trailing characters");
         return 1;
     }
+}
+
+void _lexOnTInt(_LexLContext* restrict llc, intmax_t num, _Bool overflow)
+{
+    listAdd(llc->tokens, tokenInt(T_LITERAL_INTEGER, num, llc->span.pos), Token);
+    if (overflow)
+    {
+        _lexError(llc, E_WARNING, "number is too large", "make the number smaller or use defferent type");
+        return;
+    }
+    fsFree(llc->span);
+}
+
+void _lexOnTFloat(_LexLContext* restrict llc, intmax_t num, _Bool isNegative, _Bool overflow, size_t digits, char* c)
+{
+    // read decimal values
+    double decimal = num;
+    // to preserve the magnitude of the number read it again as double
+    if (overflow)
+    {
+        decimal = 0;
+        for (c = llc->span.str.c + isNegative; *c && isdigit(*c); c++, digits++)
+            decimal = decimal * 10 + *c - '0';
+    }
+
+    double div = 10;
+    for (c++; *c && isdigit(*c); c++, div *= 10, digits++)
+        decimal += (*c - '0') / div;
+
+    if (*c)
+    {
+        _lexError(llc, E_ERROR, "float literal followed by characters", "remove the trailing characters");
+        return;
+    }
+
+    listAdd(llc->tokens, tokenFloat(T_LITERAL_FLOAT, isNegative ? -decimal : decimal, llc->span.pos), Token);
+    
+    // check for too large or precise numbers
+    if (isinf(decimal))
+    {
+        _lexError(llc, E_WARNING, "number is too large and will be interpreted as infinity", "");
+        return;
+    }
+    if (digits > lex_DECIMAL_WARNING_LIMIT)
+    {
+        _lexError(llc, E_WARNING, "number has too many digits and may be rounded", "if you want all the digits maybe use string");
+        return;
+    }
+
+    fsFree(llc->span);
+}
+
+void _lexOnTBase(_LexLContext* restrict llc, intmax_t base, char* c, _Bool isNegative)
+{
+    if (base < 2 || base > 36)
+    {
+        _lexError(llc, E_ERROR, "base must be between 2 and 36 (inclusive)", "change the number before z to be in that range");
+        return;
+    }
+
+    _Bool overflow = 0;
+
+    intmax_t num = _lexReadInt(c + 1, &c, base, &overflow, NULL);
+    
+    if (*c)
+    {
+        _lexError(llc, E_ERROR, "int literal followed by characters", "remove the trailing characters");
+        return;
+    }
+
+    listAdd(llc->tokens, tokenInt(T_LITERAL_INTEGER, isNegative ? -num : num, llc->span.pos), Token);
+    if (overflow)
+    {
+        _lexError(llc, E_WARNING, "number is too large", "make the number smaller or use defferent type");
+        return;
+    }
+    fsFree(llc->span);
+}
+
+_Bool _lexOnTKeyword(_LexLContext* restrict llc)
+{
+    if (_lexCheckKeyword(llc, strLit("set"), T_KEYWORD_SET, NULL, 0))
+        return 1;
+    if (_lexCheckKeyword(llc, strLit("struct"), T_KEYWORD_STRUCT, &llc->strc, 0))
+        return 1;
+    if (_lexCheckKeyword(llc, strLit("sign"), T_KEYWORD_SIGN, &llc->defd, 0))
+        return 1;
+    if (_lexCheckKeyword(llc, strLit("def"), T_KEYWORD_DEF, &llc->defd, 1))
+        return 1;
     return 0;
+}
+
+_Bool _lexOnTBool(_LexLContext* restrict llc)
+{
+    if (strEquals(llc->span.str, strLit("true")))
+    {
+        listAdd(llc->tokens, tokenBool(T_LITERAL_BOOL, 1, llc->span.pos), Token);
+        return 1;
+    }
+
+    if (strEquals(llc->span.str, strLit("false")))
+    {
+        listAdd(llc->tokens, tokenBool(T_LITERAL_BOOL, 0, llc->span.pos), Token);
+        return 1;
+    }
+
+    return 0;
+}
+
+void _lexOnDefd(_LexLContext* restrict llc)
+{
+    if (llc->defd == llc->nest)
+    {
+        Token* t = listGetP(llc->tokens, llc->tokens.length - 1);
+        if (t->type == T_IDENTIFIER_STRUCT)
+            t->type = T_IDENTIFIER_VARIABLE;
+    }
+
+    _lexOnStorage(llc);
+}
+
+void _lexOnStorage(_LexLContext* restrict llc)
+{
+    if (_lexCheckStorage(llc, strLit("*"), T_STORAGE_POINTER))
+        return;
+    if (_lexCheckStorage(llc, strLit("char"), T_STORAGE_CHAR))
+        return;
+    if (_lexCheckStorage(llc, strLit("string"), T_STORAGE_STRING))
+        return;
+    if (_lexCheckStorage(llc, strLit("int"), T_STORAGE_INT))
+        return;
+    if (_lexCheckStorage(llc, strLit("float"), T_STORAGE_FLOAT))
+        return;
+    if (_lexCheckStorage(llc, strLit("bool"), T_STORAGE_BOOL))
+        return;
+
+    listAdd(llc->tokens, tokenFileSpan(T_IDENTIFIER_STRUCT, llc->span), Token);
+}
+
+_Bool _lexCheckStorage(_LexLContext* restrict llc, String nme, T_TokenType type)
+{
+    if (!strEquals(llc->span.str, nme))
+        return 0;
+
+    listAdd(llc->tokens, tokenCreate(type, llc->span.pos), Token);
+
+    fsFree(llc->span);
+    return 1;
+}
+
+void _lexOnParm(_LexLContext* restrict llc)
+{
+    if (llc->parm > llc->nest && listGet(llc->tokens, llc->tokens.length - 1, Token).type == T_PUNCTUATION_BRACKET_OPEN)
+    {
+        listAdd(llc->tokens, tokenFileSpan(T_IDENTIFIER_STRUCT, llc->span), Token);
+        return;
+    }
+    listAdd(llc->tokens, tokenFileSpan(T_IDENTIFIER_PARAMETER, llc->span), Token);
+}
+
+void _lexOnStrc(_LexLContext* llc)
+{
+    if (llc->strc == llc->nest)
+    {
+        listAdd(llc->tokens, tokenFileSpan(T_IDENTIFIER_STRUCT, llc->span), Token);
+        return;
+    }
+
+    switch (listGet(llc->tokens, llc->tokens.length - 1, Token).type)
+    {
+    case T_PUNCTUATION_BRACKET_OPEN:
+        _lexOnStorage(llc);
+        return;
+    default:
+        listAdd(llc->tokens, tokenFileSpan(T_IDENTIFIER_PARAMETER, llc->span), Token);
+        return;
+    }
 }
 
 List _lexTokenize(Stream* in, String* filename)
@@ -575,7 +824,7 @@ List _lexTokenize(Stream* in, String* filename)
 
     _LexTContext context =
     {
-        .errors = listNew(ErrorSpan),
+        .err = listNew(ErrorSpan),
         .in = in,
         .pos = fpCreate(1, 0, filename),
         .sb = sbCreate(),
@@ -630,7 +879,7 @@ List _lexTokenize(Stream* in, String* filename)
         _lexSbAdd(ltc);
     
     // for now the error list is always empty
-    listDeepFree(ltc->errors, ErrorSpan, e, errFreeErrorSpan(e));
+    listDeepFree(ltc->err, ErrorSpan, e, errFreeErrorSpan(e));
     sbFree(&ltc->sb);
 
     return ltc->spans;

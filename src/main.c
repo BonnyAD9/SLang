@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     size_t infos = 0;
     size_t msgs = 0;
     listForEach(errs, ErrorSpan, t,
-        errPrintErrorSpan(term_out, t, filename);
+        errPrintErrorSpan(term_out, t);
         printf("\n");
         msgs++;
         switch (t.level)
@@ -54,6 +54,7 @@ int main(int argc, char** argv)
             break;
         }
     );
+
     if (errors != 0)
     {
         printf("#Errors: %zu\n#Warnings: %zu\n#Infos: %zu\n", errors, warnings, infos);

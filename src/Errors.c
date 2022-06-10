@@ -9,27 +9,21 @@
 #include "FilePos.h"
 #include "Stream.h"
 
-/**
- * @brief creates copy of the given string
- * 
- * @param str string to copy
- * @return char* copy of the string
- */
 char* _errCopyString(const char* str);
 
-ErrorSpan errCreateErrorSpan(ErrorLevel level, FileSpan span, const char* message, const char* help)
+ErrorSpan errCreateErrorSpan(ErrorLevel level, FileSpan span, String message, String help)
 {
     ErrorSpan error =
     {
         .level = level,
         .span = span,
-        .message = _errCopyString(message),
-        .help = _errCopyString(help),
+        .message = message,
+        .help = help,
     };
     return error;
 }
 
-void errPrintErrorSpan(Stream* out, ErrorSpan token, const char* filename)
+void errPrintErrorSpan(Stream* out, ErrorSpan token)
 {
     const char* msgType;
     const char* msgColor;
@@ -55,16 +49,16 @@ void errPrintErrorSpan(Stream* out, ErrorSpan token, const char* filename)
 
     fpPrint(out, token.span.pos);
     stPrintf(out, ":\t%s%s"term_COLRESET" %s\n\t%s%s"term_COLRESET"\n\t\x1b"term_BGREEN"help:\x1b[0m %s",
-            msgColor, msgType, token.message,
+            msgColor, msgType, token.message.c,
             msgColor, token.span.str.c,
-            token.help);
+            token.help.c);
 }
 
 void errFreeErrorSpan(ErrorSpan error)
 {
     fsFree(error.span);
-    free(error.message);
-    free(error.help);
+    strFree(error.message);
+    strFree(error.help);
 }
 
 ErrorToken errCreateErrorToken(ErrorLevel level, Token token, const char* message, const char* help)

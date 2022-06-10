@@ -18,8 +18,8 @@ typedef struct ErrorSpan
 {
     ErrorLevel level;
     FileSpan span;
-    char* message;
-    char* help;
+    String message;
+    String help;
 } ErrorSpan;
 
 typedef struct ErrorToken
@@ -39,7 +39,7 @@ typedef struct ErrorToken
  * @param help suggestion for fixing the error
  * @return ErrorToken 
  */
-ErrorSpan errCreateErrorSpan(ErrorLevel level, FileSpan span, const char* message, const char* help);
+ErrorSpan errCreateErrorSpan(ErrorLevel level, FileSpan span, String message, String help);
 
 /**
  * @brief prints this error span into the given stream
@@ -48,7 +48,7 @@ ErrorSpan errCreateErrorSpan(ErrorLevel level, FileSpan span, const char* messag
  * @param error error to print
  * @param filename file in which this span is
  */
-void errPrintErrorSpan(Stream* out, ErrorSpan error, const char* filename);
+void errPrintErrorSpan(Stream* out, ErrorSpan error);
 
 /**
  * @brief frees error span
