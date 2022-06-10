@@ -39,6 +39,21 @@ Hello World
 - `/` divides the first argument by the second argument (works with int and float)
 - `%` performs a modulo with two int arguments
 
+### Escape sequences
+(in string and char literals)
+- `\0` null character
+- `\n` newline
+- `\r` carrige return
+- `\t` tab
+- `\x` hex char
+    - there is no length limit
+    - `\x` followed by no hex character is same as `\0`
+    - `\x68656c6c6f` is same as `hello`
+    - sequence can by optionally ended with `;`
+    - `\x68656c6c;6f` is same as `hell6f`
+- any other character directly following `\` is interpreted literally
+    - it is not recommended to use this for other characters than`\'`, `\"` and `\\`
+
 ## Comments
 - use `//` for line comments
 - use `/* */` for block comments (`/*/` is valid block comment)

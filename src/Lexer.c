@@ -1045,8 +1045,8 @@ int _lexOnHexEscape(_LexTContext* restrict ltc, int qchr)
 
     sbFree(&sb);
 
-    // return the last unreaded character
-    return chr;
+    // return the last unreaded character, skip ;
+    return chr == ';' ? stGetChar(ltc->in) : chr;
 }
 
 int _lexOnSlash(_LexTContext* restrict ltc)
