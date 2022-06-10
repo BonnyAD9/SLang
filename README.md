@@ -47,7 +47,7 @@ Hello World
 - `\t` tab
 - `\x` hex char
     - there is no length limit
-    - `\x` followed by no hex character is same as `\0`
+    - `\xhello` followed by no hex character is same as `hello`
     - `\x68656c6c6f` is same as `hello`
     - sequence can by optionally ended with `;`
     - `\x68656c6c;6f` is same as `hell6f`
