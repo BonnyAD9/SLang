@@ -52,7 +52,7 @@ Hello World
     - sequence can by optionally ended with `;`
     - `\x68656c6c;6f` is same as `hell6f`
 - any other character directly following `\` is interpreted literally
-    - it is not recommended to use this for other characters than`\'`, `\"` and `\\`
+    - it is not recommended to use this for other characters than`\'`, `\"` and `\\` (new escape sequences may be added later)
 
 ## Comments
 - use `//` for line comments
